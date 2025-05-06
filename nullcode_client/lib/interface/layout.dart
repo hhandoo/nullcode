@@ -1,90 +1,113 @@
 import 'package:flutter/material.dart';
-import '../pages/home.dart';
+import 'routes.dart';
 
-class AppLayout extends StatefulWidget {
-  const AppLayout({super.key});
+class GenericPage extends StatelessWidget {
+  final RouteConfig config;
 
-  @override
-  State<AppLayout> createState() => _AppLayoutState();
-}
-
-class _AppLayoutState extends State<AppLayout> {
-  int _selectedIndex = 0;
-
-  static const List<Widget> _screens = <Widget>[HomePage()];
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
+  const GenericPage({super.key, required this.config});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Null Code'),
-        leading: const Icon(Icons.code),
-      ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          if (constraints.maxWidth > 600) {
-            // Web layout with NavigationRail
-            return Row(
+      appBar: _buildAppBar(context),
+      drawer: _buildDrawer(context),
+      body: _buildResponsiveBody(context, config),
+    );
+  }
+
+  AppBar _buildAppBar(BuildContext context) {
+    return AppBar(
+      title: Text(config.title),
+      elevation: 2,
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.info),
+          onPressed: () {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('App Version 1.0.0')));
+          },
+        ),
+      ],
+    );
+  }
+
+  Drawer _buildDrawer(BuildContext context) {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          DrawerHeader(
+            decoration: const BoxDecoration(color: Colors.teal),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                NavigationRail(
-                  selectedIndex: _selectedIndex,
-                  onDestinationSelected: _onItemTapped,
-                  labelType: NavigationRailLabelType.all,
-                  destinations: const [
-                    NavigationRailDestination(
-                      icon: Icon(Icons.home),
-                      selectedIcon: Icon(Icons.home_filled),
-                      label: Text('Home'),
-                    ),
-                    NavigationRailDestination(
-                      icon: Icon(Icons.code),
-                      selectedIcon: Icon(Icons.code),
-                      label: Text('Code'),
-                    ),
-                    NavigationRailDestination(
-                      icon: Icon(Icons.settings),
-                      selectedIcon: Icon(Icons.settings),
-                      label: Text('Settings'),
-                    ),
-                  ],
+                const Text(
+                  'Navigation Menu',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                Expanded(child: _screens[_selectedIndex]),
-              ],
-            );
-          } else {
-            // Mobile layout with BottomNavigationBar
-            return Column(
-              children: [
-                Expanded(child: _screens[_selectedIndex]),
-                BottomNavigationBar(
-                  items: const [
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.home),
-                      label: 'Home',
-                    ),
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.code),
-                      label: 'Code',
-                    ),
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.settings),
-                      label: 'Settings',
-                    ),
-                  ],
-                  currentIndex: _selectedIndex,
-                  onTap: _onItemTapped,
+                const SizedBox(height: 8),
+                Text(
+                  'Explore our app',
+                  style: TextStyle(
+                    // ignore: deprecated_member_use
+                    color: Colors.white.withOpacity(0.8),
+                    fontSize: 16,
+                  ),
                 ),
               ],
-            );
-          }
-        },
+            ),
+          ),
+          ...AppRoutes.routeConfigs.map(
+            (config) => ListTile(
+              leading: Icon(config.icon),
+              title: Text(config.title),
+              onTap: () {
+                Navigator.pushNamed(
+                  context,
+                  AppRoutes.routes.keys.elementAt(
+                    AppRoutes.routeConfigs.indexOf(config),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
+    );
+  }
+
+  Widget _buildResponsiveBody(BuildContext context, RouteConfig config) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+
+    return SingleChildScrollView(
+      child: _buildTextContent(context, config.title, config.description),
+    );
+  }
+
+  Widget _buildTextContent(
+    BuildContext context,
+    String title,
+    String description,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: Theme.of(
+            context,
+          ).textTheme.headlineMedium?.copyWith(color: Colors.teal[800]),
+        ),
+        const SizedBox(height: 16),
+        Text(description, style: Theme.of(context).textTheme.bodyMedium),
+      ],
     );
   }
 }

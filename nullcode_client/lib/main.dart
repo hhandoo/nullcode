@@ -1,22 +1,27 @@
 import 'package:flutter/material.dart';
-import 'interface/layout.dart';
+import 'interface/routes.dart';
 
 void main() {
-  runApp(const NullCodeApp());
+  runApp(const MyApp());
 }
 
-class NullCodeApp extends StatelessWidget {
-  const NullCodeApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Null Code',
+      title: 'Dynamic Flutter App',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
+        primarySwatch: Colors.teal,
+        fontFamily: 'Roboto',
+        textTheme: const TextTheme(
+          headlineMedium: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+          bodyMedium: TextStyle(fontSize: 16),
+        ),
       ),
-      home: const AppLayout(),
+      initialRoute: '/',
+      routes: AppRoutes.routes,
     );
   }
 }

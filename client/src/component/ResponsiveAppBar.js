@@ -119,10 +119,14 @@ function ResponsiveAppBar(props) {
               return <Button
                 key={page.page_path}
                 href={page.page_path}
-                color='primary'
                 size='small'
+                color='inherit'
                 onClick={handleCloseNavMenu}
-                sx={{ my: 2, mx: 1, display: 'block', textTransform: 'none', textAlign: 'center' }}
+                sx={{
+                  my: 2, mx: 1, display: 'block',
+                  textTransform: 'none',
+                  textAlign: 'center',
+                }}
               >
                 {page.page_name}
               </Button>
@@ -137,7 +141,6 @@ function ResponsiveAppBar(props) {
         </Box>
         <IconButton
           size="large"
-          color="primary"
           href='/settings'
         >
           <Settings />

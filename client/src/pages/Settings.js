@@ -68,7 +68,7 @@ const Settings = () => {
 
       <Divider sx={{ my: 2 }} />
 
-      <Typography sx={{ my: 1 }} variant="h6">Local Storage</Typography>
+      <Typography sx={{ my: 1 }} variant="h6">Your Local Storage</Typography>
 
       <CodeBlock code={JSON.stringify(settings)} language="json" />
     </Box>

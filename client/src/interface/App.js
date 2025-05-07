@@ -7,7 +7,11 @@ import Courses from '../pages/Courses';
 import About from '../pages/About';
 import NotFound from '../pages/NotFound';
 
+
+import Footer from '../component/Footer';
+
 import { Container } from '@mui/material';
+import DynamicBreadcrumbs from '../component/DynamicBreadcrumbs';
 
 const AppBarData = {
   website_name: "Null Code",
@@ -54,6 +58,7 @@ function App() {
   return (
     <Container maxWidth="xl">
       <ResponsiveAppBar AppBarData={AppBarData} />
+      <DynamicBreadcrumbs />
       <Routes>
         {
           AppBarData.pages.map(
@@ -63,6 +68,9 @@ function App() {
           )
         }
       </Routes>
+
+
+      <Footer />
     </Container>
   );
 }

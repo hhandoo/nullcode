@@ -2,28 +2,51 @@ import React from 'react';
 import { Container, Typography, Button, Box } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
 import Featured from '../component/Featured';
+import Features from '../component/Features';
 
-// Custom styled component for the hero section
+
 const HeroSection = styled(Box)(() => {
-  const theme = useTheme(); // Access the current theme
-
+  const theme = useTheme();
   return ({
-    // Apply theme colors
     background: `linear-gradient(45deg, ${theme.palette.primary.light} 10%, ${theme.palette.secondary.main} 90%)`,
-    color: theme.palette.primary.contrastText, // Use contrasting text color from the primary palette
+    color: theme.palette.primary.contrastText,
     padding: theme.spacing(8, 0),
     textAlign: 'center',
-    borderRadius: 24, // Use the theme's border radius
+    borderRadius: 12,
     marginTop: theme.spacing(8),
     [theme.breakpoints.down('sm')]: {
-      padding: theme.spacing(4, 0), // Reduced padding for smaller screens
+      padding: theme.spacing(4, 0),
       marginTop: theme.spacing(4),
     },
   });
 });
 
+
+
+
+
+
+const featured_pages = [
+  {
+    image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Apache_Spark_logo.svg/250px-Apache_Spark_logo.svg.png',
+    header: 'Apache Spark Fundamentals',
+    footer: 'Learn the core concepts of Apache Spark for big data processing and analysis.',
+    path: '/courses'
+  }, {
+    image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Apache_Spark_logo.svg/250px-Apache_Spark_logo.svg.png',
+    header: 'Apache Spark Fundamentals',
+    footer: 'Learn the core concepts of Apache Spark for big data processing and analysis.',
+    path: '/courses'
+  },
+  {
+    image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Apache_Spark_logo.svg/250px-Apache_Spark_logo.svg.png',
+    header: 'Apache Spark Fundamentals',
+    footer: 'Learn the core concepts of Apache Spark for big data processing and analysis.',
+    path: '/courses'
+  },
+]
+
 const HomePageHero = () => {
-  const theme = useTheme();
   return (
     <div>
       <HeroSection>
@@ -34,13 +57,13 @@ const HomePageHero = () => {
             sx={{
               fontWeight: 'bold',
               fontSize: {
-                xs: '2rem',  // Smaller font size on extra-small screens (mobile)
-                sm: '2.5rem', // Slightly larger on small screens
-                md: '3rem',  // Original size on medium and larger screens
+                xs: '2rem',
+                sm: '2.5rem',
+                md: '3rem',
               },
             }}
           >
-            Unlock Your Coding Potential with f"{"{"}'NULL C0d3'{"}"}"
+            Learn with f"{"{"}'NULL C0d3'{"}"}"
           </Typography>
           <Typography variant="subtitle1"
             sx={{
@@ -65,11 +88,14 @@ const HomePageHero = () => {
         </Container>
       </HeroSection>
 
-      <Typography variant="h4" gutterBottom align="center" sx={{ mt: 4 }}>
+      <Typography variant="h4" gutterBottom align="center" sx={{ mt: 4, fontWeight: 'bold' }}>
         Featured Courses
       </Typography>
 
-      <Featured />
+      <Featured featured_pages={featured_pages} />
+
+
+      <Features />
     </div>
   );
 };

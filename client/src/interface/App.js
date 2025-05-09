@@ -3,7 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 
 import Home from '../pages/Home';
 import Settings from '../pages/Settings';
-import Courses from '../pages/Courses';
+import CoursesMaster from '../pages/CoursesMaster';
 import About from '../pages/About';
 import NotFound from '../pages/NotFound';
 
@@ -26,7 +26,7 @@ const AppBarData = {
     {
       page_name: "Courses",
       page_path: "/courses",
-      element: <Courses />,
+      element: <CoursesMaster />,
       index: false,
       is_in_RAB: true
     },

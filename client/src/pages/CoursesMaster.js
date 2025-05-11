@@ -59,9 +59,9 @@ export default function CoursesMaster() {
                 </Paper>
 
             </Box>
-            {/* <Typography variant="h4" fontWeight="bold" textAlign="center" sx={{ mb: 2, mt: 2 }}>
-                Browse Courses
-            </Typography> */}
+            <Typography variant="h4" fontWeight="bold" textAlign="center" sx={{ mb: 2, mt: 2 }}>
+                Recommended
+            </Typography>
             <BrowseCourses />
         </Box>
     );

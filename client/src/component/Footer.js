@@ -5,7 +5,7 @@ import { styled } from '@mui/material/styles';
 const FooterWrapper = styled(Box)(() => {
     const theme = useTheme();
     return ({
-        color: theme.palette.grey[400], // Light grey text
+        color: theme.palette.secondary, // Light grey text
         padding: theme.spacing(6, 0),
         textAlign: 'center',
         marginTop: 'auto', // Push footer to bottom,

@@ -1,56 +1,78 @@
 import React from "react";
 import {
     Grid,
-    ButtonGroup,
-    Button,
+    CardMedia,
     Typography,
     Card,
     CardContent,
-    List,
     ListItem,
-    ListItemText,
+    CardActionArea,
+    useTheme
 } from "@mui/material";
 
 const courses = [
     { id: 1, title: "Python for Beginners", description: "Learn Python from scratch." },
     { id: 2, title: "Advanced PySpark", description: "Deep dive into PySpark architecture and tuning." },
     { id: 3, title: "React + MUI", description: "Build professional UIs using React and Material UI." },
+    { id: 4, title: "React + MUI", description: "Build professional UIs using React and Material UI." },
+    { id: 5, title: "React + MUI", description: "Build professional UIs using React and Material UI." },
+    { id: 6, title: "React + MUI", description: "Build professional UIs using React and Material UI." },
+    { id: 7, title: "React + MUI", description: "Build professional UIs using React and Material UI." },
+    { id: 8, title: "React + MUI", description: "Build professional UIs using React and Material UI." },
 ];
 
-export default function BrowseCourses() {
-    return (
-        <Grid container spacing={2} justifyContent="center" sx={{ mt: 4 }}>
-            <Grid item xs={12} sm={12} md={4} justifyContent="center">
-                <Grid justifyContent="center">
-                    <Typography variant="h6" gutterBottom>Categories</Typography>
-                    <ButtonGroup variant="outlined"
-                        fullWidth
-                        orientation="vertical"
-                        aria-label="Basic button group"
-                        sx={{ width: '100%' }}>
-                        <Button size="large" sx={{ textTransform: 'none', fontWeight: 'bold' }} variant="contained">One</Button>
-                        <Button size="small" sx={{ textTransform: 'none', fontWeight: 'bold' }}>Two</Button>
-                        <Button size="small" sx={{ textTransform: 'none', fontWeight: 'bold' }}>Three</Button>
-                    </ButtonGroup>
-                </Grid>
-            </Grid>
+const getRandomThemeColor = (mode) => {
+    const base = mode === "dark" ? 30 : 200;
+    const range = mode === "dark" ? 100 : 55;
+    const r = Math.floor(base + Math.random() * range);
+    const g = Math.floor(base + Math.random() * range);
+    const b = Math.floor(base + Math.random() * range);
+    return `rgb(${r}, ${g}, ${b}, 0.5)`;
+};
 
-            <Grid item xs={12} sm={12} md={8}>
-                <List>
-                    {courses.map((course) => (
-                        <ListItem key={course.id} disablePadding sx={{ mb: 2 }}>
-                            <Card variant="outlined" sx={{ width: '100%' }}>
+
+export default function BrowseCourses() {
+    const theme = useTheme();
+
+    return (
+        <Grid container justifyContent="center" sx={{ mt: 4 }} spacing={2}>
+
+            {courses.map((course) => (
+                <Grid item xs={12} sm={12} md={3} key={course.id}>
+                    <ListItem disablePadding sx={{ mb: 2 }}>
+                        <Card
+                            variant="outlined"
+                            sx={{
+                                backgroundColor: getRandomThemeColor(theme.palette.mode),
+                                width: "100%",
+                                maxWidth: 345,
+
+                                color: theme.palette.getContrastText(
+                                    getRandomThemeColor(theme.palette.mode)
+                                ),
+                            }}
+                        >
+
+                            <CardActionArea>
+                                <CardMedia
+                                    sx={{ height: 140 }}
+                                    image="https://picsum.photos/400/200"
+                                    title="green iguana"
+                                />
                                 <CardContent>
-                                    <Typography variant="h6">{course.title}</Typography>
-                                    <Typography variant="body2" color="text.secondary">
+                                    <Typography gutterBottom variant="h5" component="div">
+                                        {course.title}
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                                         {course.description}
                                     </Typography>
                                 </CardContent>
-                            </Card>
-                        </ListItem>
-                    ))}
-                </List>
-            </Grid>
+
+                            </CardActionArea>
+                        </Card>
+                    </ListItem>
+                </Grid>
+            ))}
         </Grid>
 
     );

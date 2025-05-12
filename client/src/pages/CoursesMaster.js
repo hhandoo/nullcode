@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Typography, Button, Box, TextField, Paper } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import BrowseCourses from './BrowseCourses';
+import CustomPagination from '../component/CustomPagination';
 
 
 export default function CoursesMaster() {
@@ -63,6 +64,8 @@ export default function CoursesMaster() {
                 Recommended
             </Typography>
             <BrowseCourses />
+
+            <CustomPagination />
         </Box>
     );
 }

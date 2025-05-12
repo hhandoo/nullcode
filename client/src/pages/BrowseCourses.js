@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 
 const courses = [
-    { id: 1, title: "Python for Beginners", description: "Learn Python from scratch." },
+    { id: 1, title: "Python for Beginners", description: "Learn Python from scratch. Learn Python from scratch." },
     { id: 2, title: "Advanced PySpark", description: "Deep dive into PySpark architecture and tuning." },
     { id: 3, title: "React + MUI", description: "Build professional UIs using React and Material UI." },
     { id: 4, title: "React + MUI", description: "Build professional UIs using React and Material UI." },
@@ -35,39 +35,57 @@ export default function BrowseCourses() {
     const theme = useTheme();
 
     return (
-        <Grid container justifyContent="center" sx={{ mt: 4 }} spacing={2}>
-
+        <Grid container justifyContent="center" sx={{ mt: 6 }} spacing={2}>
             {courses.map((course) => (
-                <Grid item xs={12} sm={12} md={3} key={course.id}>
-                    <ListItem disablePadding sx={{ mb: 2 }}>
+                <Grid item xs={12} sm={6} md={4} key={course.id}>
+                    <ListItem disablePadding sx={{ mb: 3 }}>
                         <Card
                             variant="outlined"
                             sx={{
                                 backgroundColor: getRandomThemeColor(theme.palette.mode),
-                                width: "100%",
-                                maxWidth: 345,
-
                                 color: theme.palette.getContrastText(
                                     getRandomThemeColor(theme.palette.mode)
                                 ),
+                                borderRadius: 3,
+                                boxShadow: '0 6px 16px rgba(0, 0, 0, 0.15)',
+                                transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+                                '&:hover': {
+                                    transform: 'translateY(-8px)',
+                                    boxShadow: '0 12px 24px rgba(0, 0, 0, 0.25)',
+                                },
+                                overflow: 'hidden',
                             }}
                         >
-
                             <CardActionArea>
                                 <CardMedia
-                                    sx={{ height: 140 }}
-                                    image="https://picsum.photos/400/200"
-                                    title="green iguana"
+                                    sx={{ height: 180, objectFit: 'cover' }}
+                                    image={`https://picsum.photos/400/200?random=${course.id}`}
+                                    title={course.title}
                                 />
-                                <CardContent>
-                                    <Typography gutterBottom variant="h5" component="div">
+                                <CardContent sx={{ p: 3, minHeight: 140, display: 'flex', flexDirection: 'column' }}>
+                                    <Typography
+                                        variant="h5"
+                                        component="div"
+                                        gutterBottom
+                                        sx={{
+                                            fontWeight: 600,
+                                            lineHeight: 1.3,
+                                            mb: 2,
+                                        }}
+                                    >
                                         {course.title}
                                     </Typography>
-                                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                                    <Typography
+                                        variant="body2"
+                                        sx={{
+                                            color: 'text.secondary',
+                                            lineHeight: 1.7,
+                                            flexGrow: 1,
+                                        }}
+                                    >
                                         {course.description}
                                     </Typography>
                                 </CardContent>
-
                             </CardActionArea>
                         </Card>
                     </ListItem>

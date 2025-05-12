@@ -13,7 +13,7 @@ const Settings = () => {
 
 
   return (
-    <Box sx={{ p: 4, maxWidth: 600, mx: 'auto' }}>
+    <Box sx={{ p: 2, maxWidth: 600, mx: 'auto' }}>
       <Typography variant="h3" gutterBottom>Settings</Typography>
 
       <Divider sx={{ my: 2 }} />

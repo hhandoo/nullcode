@@ -20,7 +20,7 @@ const FooterLink = styled(Link)(() => ({
     textDecoration: 'none',
     '&:hover': {
         textDecoration: 'underline',
-        color: '#fff', // Optional: change color on hover
+
     },
 }));
 
@@ -38,7 +38,9 @@ const Footer = () => {
                     {' | '}
                     <FooterLink href="/contact-us">Contact Us</FooterLink>
                 </Typography>
-
+                <Typography variant="body2" component="p" sx={{ mt: 2 }}>
+                    Created with ❤️ in India 🇮🇳
+                </Typography>
             </Container>
         </FooterWrapper>
     );

@@ -35,7 +35,7 @@ export default function BrowseCourses() {
     const theme = useTheme();
 
     return (
-        <Grid container justifyContent="center" sx={{ mt: 6 }} spacing={2}>
+        <Grid container justifyContent="center" sx={{ mt: 2 }} spacing={2}>
             {courses.map((course) => (
                 <Grid item xs={12} sm={6} md={4} key={course.id}>
                     <ListItem disablePadding sx={{ mb: 3 }}>

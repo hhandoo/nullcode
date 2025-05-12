@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { ThemeContext } from '../interface/ThemeContext';
 import {
   Box, Typography, FormControl,
-  Select, MenuItem, ToggleButtonGroup, ToggleButton, Divider,
+  Select, MenuItem, ToggleButtonGroup, ToggleButton, Divider
 } from '@mui/material';
 
 
@@ -13,47 +13,55 @@ const Settings = () => {
 
 
   return (
-    <Box sx={{ p: 2, maxWidth: 600, mx: 'auto' }}>
-      <Typography variant="h3" gutterBottom>Settings</Typography>
-
-      <Divider sx={{ my: 2 }} />
+    <Box sx={{ p: 2, maxWidth: 700, mx: 'auto' }}>
+      <Typography variant="h2" gutterBottom>Settings</Typography>
+      <Divider sx={{ mb: 6 }} />
 
       <Typography variant="h6">Theme Mode</Typography>
+      <Divider sx={{ mb: 2 }} />
+
       <ToggleButtonGroup
         color="primary"
         value={settings.mode}
         exclusive
+        sx={{ mb: 6 }}
         onChange={(e, val) => val && updateSettings({ mode: val })}
-        sx={{ my: 1 }}
         size='small'
       >
-        <ToggleButton sx={{ textTransform: 'none' }} value="light">Light</ToggleButton>
-        <ToggleButton sx={{ textTransform: 'none' }} value="dark">Dark</ToggleButton>
-        <ToggleButton sx={{ textTransform: 'none' }} value="system">System</ToggleButton>
+        <ToggleButton sx={{ textTransform: 'none', fontWeight: 'bold' }} value="light">Light</ToggleButton>
+        <ToggleButton sx={{ textTransform: 'none', fontWeight: 'bold' }} value="dark">Dark</ToggleButton>
+        <ToggleButton sx={{ textTransform: 'none', fontWeight: 'bold' }} value="system">System</ToggleButton>
       </ToggleButtonGroup>
 
-      <Divider sx={{ my: 2 }} />
+
 
       <Typography variant="h6">Color Palette</Typography>
-      <ToggleButtonGroup
-        color="primary"
-        value={settings.color}
-        exclusive
-        onChange={(e, val) => val && updateSettings({ color: val })}
-        sx={{ my: 1 }}
-        size='small'
-      >
-        <ToggleButton sx={{ textTransform: 'none' }} value="blue">Blue</ToggleButton>
-        <ToggleButton sx={{ textTransform: 'none' }} value="red">Red</ToggleButton>
-        <ToggleButton sx={{ textTransform: 'none' }} value="green">Green</ToggleButton>
-        <ToggleButton sx={{ textTransform: 'none' }} value="purple">Purple</ToggleButton>
-        <ToggleButton sx={{ textTransform: 'none' }} value="orange">Orange</ToggleButton>
-      </ToggleButtonGroup>
 
-      <Divider sx={{ my: 2 }} />
+      <Divider sx={{ mb: 2 }} />
+      <FormControl sx={{ minWidth: 120 }} size="small" fullWidth>
+        <Select
+          variant='standard'
+          labelId="color-select-label"
+          value={settings.color}
+          label="Color"
+          sx={{ mb: 6 }}
+          onChange={(e) => updateSettings({ color: e.target.value })}
+        >
+          <MenuItem value="blue">Blue</MenuItem>
+          <MenuItem value="red">Red</MenuItem>
+          <MenuItem value="green">Green</MenuItem>
+          <MenuItem value="purple">Purple</MenuItem>
+          <MenuItem value="orange">Orange</MenuItem>
+          <MenuItem value="lightBlue">Light Blue</MenuItem>
+          <MenuItem value="lightGreen">Light Green</MenuItem>
+          <MenuItem value="lightPurple">Light Purple</MenuItem>
+        </Select>
+      </FormControl>
+
 
       <Typography variant="h6">Font Family</Typography>
-      <FormControl fullWidth sx={{ my: 1 }}>
+      <Divider sx={{ mb: 2 }} />
+      <FormControl fullWidth sx={{ mb: 6 }}>
         <Select
           size='small'
           variant='standard'
@@ -62,13 +70,15 @@ const Settings = () => {
           onChange={(e) => updateSettings({ font: e.target.value })}
         >
           <MenuItem value="Courier New">Courier New</MenuItem>
-          <MenuItem value="Arial">Arial</MenuItem>
+          <MenuItem value="Georgia, serif">Georgia, serif</MenuItem>
+          <MenuItem value="Arial, sans-serif">Arial, sans-serif</MenuItem>
+          <MenuItem value="Consolas, monospace">Consolas, monospace</MenuItem>
         </Select>
       </FormControl>
 
-      <Divider sx={{ my: 2 }} />
 
-      <Typography sx={{ my: 1 }} variant="h6">Your Local Storage</Typography>
+
+      <Typography variant="h6">Your Local Storage</Typography>
 
       <CodeBlock code={JSON.stringify(settings)} language="json" />
     </Box>

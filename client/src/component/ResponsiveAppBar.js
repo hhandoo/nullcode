@@ -141,6 +141,7 @@ function ResponsiveAppBar(props) {
         </Box>
         <IconButton
           size="large"
+          color='primary'
           href='/settings'
         >
           <Settings />

@@ -5,6 +5,7 @@ import Home from '../pages/Home';
 import Settings from '../pages/Settings';
 import CoursesMaster from '../pages/CoursesMaster';
 import About from '../pages/About';
+import LoginPage from '../pages/LoginPage';
 import NotFound from '../pages/NotFound';
 
 
@@ -34,6 +35,13 @@ const AppBarData = {
       page_name: "Settings",
       page_path: "/settings",
       element: <Settings />,
+      index: false,
+      is_in_RAB: false
+    },
+    {
+      page_name: "Login",
+      page_path: "/login",
+      element: <LoginPage />,
       index: false,
       is_in_RAB: false
     },

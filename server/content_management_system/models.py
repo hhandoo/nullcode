@@ -2,9 +2,9 @@ from django.db import models
 from django.utils import timezone
 
 class CourseCategory(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    slug = models.SlugField(max_length=100, unique=True)
-    description = models.TextField(blank=True)
+    category_name = models.CharField(max_length=100, unique=True)
+    category_slug = models.SlugField(max_length=100, unique=True)
+    category_description = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
 
     class Meta:
@@ -12,20 +12,21 @@ class CourseCategory(models.Model):
         verbose_name_plural = "Course Categories"
 
     def __str__(self):
-        return self.name
+        return self.category_name
 
 class CourseType(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    slug = models.SlugField(max_length=100, unique=True)
-    description = models.TextField(blank=True)
+    course_name = models.CharField(max_length=100, unique=True)
+    course_slug = models.SlugField(max_length=100, unique=True)
+    course_description = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
 
     class Meta:
         verbose_name = "Course Type"
         verbose_name_plural = "Course Types"
+        
 
     def __str__(self):
-        return self.name
+        return self.course_name
 
 class Course(models.Model):
     course_category = models.ForeignKey(CourseCategory, on_delete=models.CASCADE)
@@ -43,6 +44,11 @@ class Course(models.Model):
     class Meta:
         verbose_name = "Course"
         verbose_name_plural = "Courses"
+
+        indexes = [
+            models.Index(fields=['course_title']),
+            models.Index(fields=['course_description']),
+        ]
 
     def __str__(self):
         return self.course_title

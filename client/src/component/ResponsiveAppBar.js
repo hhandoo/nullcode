@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -10,10 +10,30 @@ import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 import CodeIcon from '@mui/icons-material/Code';
 import Settings from '@mui/icons-material/Settings';
-
+import LoginController from './LoginController';
 
 
 function ResponsiveAppBar(props) {
+  const [user, setUser] = useState(null); // Change to mock a logged-in user
+
+
+  const handleLogin = () => {
+    // Replace with real logic
+    setUser({ firstName: 'John', lastName: 'Doe' });
+  };
+
+  const handleRegister = () => {
+    console.log('Register clicked');
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+  };
+
+  const handleProfile = () => {
+    console.log('Profile clicked');
+  };
+
 
 
   const [anchorElNav, setAnchorElNav] = React.useState(null);
@@ -89,11 +109,15 @@ function ResponsiveAppBar(props) {
                 return null
               }
             }
-
-
-
-
             )}
+
+            <LoginController
+              user={user}
+              onLogin={handleLogin}
+              onRegister={handleRegister}
+              onLogout={handleLogout}
+              onProfile={handleProfile}
+            />
           </Menu>
         </Box>
         <CodeIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
@@ -137,8 +161,18 @@ function ResponsiveAppBar(props) {
           }
 
           )}
+          <LoginController
+            user={user}
+            onLogin={handleLogin}
+            onRegister={handleRegister}
+            onLogout={handleLogout}
+            onProfile={handleProfile}
+          />
 
         </Box>
+
+
+
         <IconButton
           size="large"
           color='primary'

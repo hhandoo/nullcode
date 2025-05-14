@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Typography, Container, Link, useTheme } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import TimeDisplay from '../component/TimeDisplay';
 
 const FooterWrapper = styled(Box)(() => {
     const theme = useTheme();
@@ -31,16 +32,18 @@ const Footer = () => {
                 <Typography variant="body2" component="p" gutterBottom>
                     &copy; {new Date().getFullYear()} Null Code. All rights reserved.
                 </Typography>
-                <Typography variant="body2" component="p">
+                <Typography variant="body2" component="p" sx={{ mb: 2 }}>
                     <FooterLink href="/privacy-policy">Privacy Policy</FooterLink>
                     {' | '}
                     <FooterLink href="/terms-of-service">Terms of Service</FooterLink>
                     {' | '}
                     <FooterLink href="/contact-us">Contact Us</FooterLink>
                 </Typography>
+                <TimeDisplay />
                 <Typography variant="body2" component="p" sx={{ mt: 2 }}>
                     Created with ❤️ in India 🇮🇳
                 </Typography>
+
             </Container>
         </FooterWrapper>
     );

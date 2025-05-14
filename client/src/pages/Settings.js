@@ -14,7 +14,7 @@ const Settings = () => {
 
   return (
     <Box sx={{ p: 2, maxWidth: 700, mx: 'auto' }}>
-      <Typography variant="h2" gutterBottom>Settings</Typography>
+      <Typography variant="h2" gutterBottom>Site Settings</Typography>
       <Divider sx={{ mb: 6 }} />
 
       <Typography variant="h6">Theme Mode</Typography>

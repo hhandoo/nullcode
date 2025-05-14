@@ -6,8 +6,8 @@ import Settings from '../pages/Settings';
 import CoursesMaster from '../pages/CoursesMaster';
 import About from '../pages/About';
 import LoginPage from '../pages/LoginPage';
+import RegisterPage from '../pages/RegisterPage';
 import NotFound from '../pages/NotFound';
-
 
 import Footer from '../component/Footer';
 
@@ -46,6 +46,13 @@ const AppBarData = {
       is_in_RAB: false
     },
     {
+      page_name: "Login",
+      page_path: "/register",
+      element: <RegisterPage />,
+      index: false,
+      is_in_RAB: false
+    },
+    {
       page_name: "About",
       page_path: "/about",
       element: <About />,
@@ -67,6 +74,7 @@ function App() {
     <Container maxWidth="xl">
       <ResponsiveAppBar AppBarData={AppBarData} />
       <DynamicBreadcrumbs />
+
       <Routes>
         {
           AppBarData.pages.map(
@@ -76,6 +84,7 @@ function App() {
           )
         }
       </Routes>
+
 
 
       <Footer />

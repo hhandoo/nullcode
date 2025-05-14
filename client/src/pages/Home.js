@@ -83,7 +83,7 @@ const HomePageHero = () => {
             size="large"
             sx={{ textTransform: 'none', mt: 4, fontWeight: 'bold' }}
           >
-            Explore Courses
+            Get Started
           </Button>
         </Container>
       </HeroSection>

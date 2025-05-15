@@ -1,4 +1,3 @@
-import React from 'react';
 import { Container, Typography, Button, Box } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
 import Featured from '../component/Featured';
@@ -46,7 +45,7 @@ const featured_pages = [
   },
 ]
 
-const HomePageHero = () => {
+const Home = (props) => {
   return (
     <div>
       <HeroSection>
@@ -63,7 +62,7 @@ const HomePageHero = () => {
               },
             }}
           >
-            Learn with f"{"{"}'NULL C0d3'{"}"}"
+            {props.hero_header}
           </Typography>
           <Typography variant="subtitle1"
             sx={{
@@ -74,7 +73,7 @@ const HomePageHero = () => {
               }
             }}
           >
-            Master in-demand technologies like Spark, Kafka, and more through our comprehensive and practical courses.
+            {props.hero_footer}
           </Typography>
           <Button
             href="/courses"
@@ -100,4 +99,4 @@ const HomePageHero = () => {
   );
 };
 
-export default HomePageHero;
+export default Home;

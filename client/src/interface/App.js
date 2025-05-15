@@ -8,19 +8,22 @@ import About from '../pages/About';
 import LoginPage from '../pages/LoginPage';
 import RegisterPage from '../pages/RegisterPage';
 import NotFound from '../pages/NotFound';
+import Course from '../pages/Course';
 
 import Footer from '../component/Footer';
 
 import { Container } from '@mui/material';
 import DynamicBreadcrumbs from '../component/DynamicBreadcrumbs';
-
+import SchoolIcon from '@mui/icons-material/School';
 const AppBarData = {
-  website_name: "Null Code",
+  website_name: "yalsworld.com",
+  icon: <SchoolIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} color='inherit' />,
+  icon2: <SchoolIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} color='inherit' />,
   pages: [
     {
       page_name: "Home",
       page_path: "/",
-      element: <Home />,
+      element: <Home hero_header={'Yet Another Learning Site'} hero_footer={'Master everything from Art to AI, Cooking to Cloud Computing, all in one place.'} />,
       index: true,
       is_in_RAB: true
     },
@@ -51,6 +54,13 @@ const AppBarData = {
       element: <RegisterPage />,
       index: false,
       is_in_RAB: false
+    },
+    {
+      page_name: "Course",
+      page_path: "/course",
+      element: <Course />,
+      index: true,
+      is_in_RAB: true
     },
     {
       page_name: "About",

@@ -8,7 +8,6 @@ import Menu from '@mui/material/Menu';
 import MenuIcon from '@mui/icons-material/Menu';
 import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
-import CodeIcon from '@mui/icons-material/Code';
 import Settings from '@mui/icons-material/Settings';
 import LoginController from './LoginController';
 
@@ -57,7 +56,8 @@ function ResponsiveAppBar(props) {
   return (
     <AppBar color='inherit' elevation={0} position="static">
       <Toolbar disableGutters>
-        <CodeIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} color='inherit' />
+
+        {props.AppBarData.icon}
         <Typography
           variant="h6"
           noWrap
@@ -120,7 +120,8 @@ function ResponsiveAppBar(props) {
             />
           </Menu>
         </Box>
-        <CodeIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
+
+        {props.AppBarData.icon2}
         <Typography
           variant="h5"
           noWrap

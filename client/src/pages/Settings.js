@@ -80,7 +80,8 @@ const Settings = () => {
 
       <Typography variant="h6">Your Local Storage</Typography>
 
-      <CodeBlock code={JSON.stringify(settings)} language="json" />
+      <CodeBlock code={localStorage.getItem('app-settings')} language="json" />
+      <CodeBlock code={localStorage.getItem('courseProgressLocal')} language="json" />
     </Box>
   );
 };

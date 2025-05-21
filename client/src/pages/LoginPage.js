@@ -13,7 +13,6 @@ import {
     Alert,
     Link,
     CircularProgress,
-    Avatar,
     Grid
 } from '@mui/material';
 import axios from 'axios';
@@ -77,7 +76,7 @@ const LoginPage = () => {
                     </Typography>
 
                     {error && <Alert sx={{ mt: 2 }} severity="error">{error}</Alert>}
-                    <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
+                    <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2, pl: 2, pr: 2 }}>
 
                         <TextField
                             label="Email"

@@ -78,7 +78,7 @@ const RegisterPage = () => {
 
                     {error && <Alert sx={{ mt: 2 }} severity="error">{error}</Alert>}
 
-                    <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
+                    <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2, pl: 2, pr: 2 }}>
                         <TextField
                             label="First Name"
                             variant="outlined"

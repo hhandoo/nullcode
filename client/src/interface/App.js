@@ -9,7 +9,7 @@ import LoginPage from '../pages/LoginPage';
 import RegisterPage from '../pages/RegisterPage';
 import NotFound from '../pages/NotFound';
 import Course from '../pages/Course';
-
+import Profile from '../pages/Profile';
 import Footer from '../component/Footer';
 
 import { Container } from '@mui/material';
@@ -32,6 +32,13 @@ const AppBarData = {
       page_path: "/courses",
       element: <CoursesMaster />,
       index: false,
+      is_in_RAB: true
+    },
+    {
+      page_name: "Profile",
+      page_path: "/profile",
+      element: <Profile />,
+      index: true,
       is_in_RAB: true
     },
     {

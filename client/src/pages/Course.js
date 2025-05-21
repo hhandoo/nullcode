@@ -16,6 +16,8 @@ import BookIcon from '@mui/icons-material/Book';
 import TopicIcon from '@mui/icons-material/Topic';
 import Skeleton from '@mui/material/Skeleton';
 
+import StopwatchWidget from "../component/StopwatchWidget";
+
 const courseData = {
     course_name: 'Python Programming',
     all_lessons: [
@@ -40,7 +42,7 @@ const courseData = {
 
 const STORAGE_KEY = "courseProgressLocal";
 
-export default function CoursePage() {
+export default function Course() {
     const theme = useTheme();
 
     const [expandedLessonIndex, setExpandedLessonIndex] = useState(null);
@@ -169,6 +171,7 @@ export default function CoursePage() {
                             </Box>
                         ))}
                     </List>
+                    <StopwatchWidget />
                 </Box>
                 <Box sx={{ flexGrow: 1, minHeight: 300 }}>
                     <Box sx={{ width: '100%' }}>

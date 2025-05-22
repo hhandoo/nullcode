@@ -1,84 +1,159 @@
-# user_management_system/views.py
+import os
+import time
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
-from django.core.mail import send_mail
-from django.conf import settings
-from .serializers import UserSerializer
-from .token import email_verification_token
-from django.contrib.auth.models import User
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes, force_str
 from rest_framework.views import APIView
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_decode
+from .models import CustomUser
+from .serializers import *
+from .utils import send_verification_email
 from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework_simplejwt.exceptions import InvalidToken, AuthenticationFailed
-
-class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    username_field = 'email'
-
-    def validate(self, attrs):
-        credentials = {
-            'email': attrs.get('email'),
-            'password': attrs.get('password')
-        }
-        user = self.user_authenticate(**credentials)
-        if user is None:
-            raise InvalidToken('No active account found with the given credentials')
-        if not user.is_active:
-            raise AuthenticationFailed('Please verify your email to log in.')
-        data = super().validate(attrs)
-        return data
-
-    @classmethod
-    def user_authenticate(cls, **credentials):
-        from django.contrib.auth import authenticate
-        return authenticate(**credentials)
-
-class CustomTokenObtainPairView(TokenObtainPairView):
-    serializer_class = CustomTokenObtainPairSerializer
+from django.utils.text import slugify
+from rest_framework_simplejwt.tokens import RefreshToken
+from .utils import blacklist_user_tokens  # Make sure it's imported
 
 class RegisterView(generics.CreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+    serializer_class = RegisterSerializer
+    permission_classes = [permissions.AllowAny]
+    def perform_create(self, serializer):
         user = serializer.save()
+        send_verification_email(user, self.request)
 
-        token = email_verification_token.make_token(user)
-        uid = urlsafe_base64_encode(force_bytes(user.pk))
-        verify_url = f"{settings.SITE_URL}/verify-email/{uid}/{token}/"
+from rest_framework import status
 
-        send_mail(
-            subject='Verify Your Email',
-            message=f'Please click this link to verify your email: {verify_url}',
-            from_email='noreply@yourdomain.com',
-            recipient_list=[user.email],
-        )
+class VerifyEmailView(generics.GenericAPIView):
+    permission_classes = [permissions.AllowAny]
 
-        return Response({
-            'message': 'User registered successfully. Please verify your email.',
-            'user': serializer.data
-        }, status=status.HTTP_201_CREATED)
-
-class VerifyEmailView(APIView):
     def get(self, request, uidb64, token):
         try:
-            uid = force_str(urlsafe_base64_decode(uidb64))
-            user = User.objects.get(pk=uid)
-        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-            user = None
+            uid = urlsafe_base64_decode(uidb64).decode()
+            user = CustomUser.objects.get(pk=uid)
+            
+            if user.is_verified:
+                return Response({'message': 'Email already verified.'}, status=status.HTTP_200_OK)
+            
+            if default_token_generator.check_token(user, token):
+                user.is_active = True
+                user.is_verified = True
+                user.save()
+                return Response({'message': 'Email verified successfully.'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
 
-        if user is not None and email_verification_token.check_token(user, token):
-            user.is_active = True
-            user.save()
-            return Response({'message': 'Email verified successfully'}, status=status.HTTP_200_OK)
-        return Response({'error': 'Invalid or expired token'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-class UserDetailView(generics.RetrieveAPIView):
+
+class UpdateProfileView(generics.UpdateAPIView):
+    serializer_class = UpdateProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
-    serializer_class = UserSerializer
 
     def get_object(self):
         return self.request.user
+
+class UpdateUsernameView(UpdateProfileView):
+    serializer_class = UpdateUsernameSerializer
+
+class UpdateAvatarView(generics.UpdateAPIView):
+    serializer_class = UpdateAvatarSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
+
+    def perform_update(self, serializer):
+        user = self.get_object()
+        old_avatar_path = user.avatar.path if user.avatar else None
+
+        # Save new avatar first
+        serializer.save()
+
+        # Rename the new file after saving
+        if user.avatar:
+            ext = user.avatar.name.split('.')[-1]
+            timestamp = int(time.time())
+            new_filename = f"{user.pk}_{slugify(user.first_name)}_{slugify(user.last_name)}_{slugify(user.username)}_{timestamp}.{ext}"
+            new_path = os.path.join('avatars', new_filename)
+            full_new_path = os.path.join(user.avatar.storage.location, new_path)
+
+            # Rename the file on disk
+            os.rename(user.avatar.path, full_new_path)
+
+            # Update user's avatar path
+            user.avatar.name = new_path
+            user.save()
+
+        # Delete old file if it was replaced
+        if old_avatar_path and os.path.exists(old_avatar_path):
+            os.remove(old_avatar_path)
+
+class ChangePasswordView(generics.UpdateAPIView):
+    serializer_class = ChangePasswordSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def update(self, request, *args, **kwargs):
+        user = request.user
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        if not user.check_password(serializer.validated_data['old_password']):
+            return Response({'old_password': 'Wrong password'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.set_password(serializer.validated_data['new_password'])
+        user.save()
+
+        blacklist_user_tokens(user)
+
+        return Response({
+            'message': 'Password changed successfully. You have been logged out.'
+        }, status=status.HTTP_200_OK)
+
+class ChangeEmailView(generics.GenericAPIView):
+    serializer_class = ChangeEmailSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        refresh_token = request.data.get("refresh")
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = request.user
+        user.email = serializer.validated_data['new_email']
+        user.is_verified = False
+        user.is_active = False
+        user.save()
+
+        blacklist_user_tokens(user)
+
+        send_verification_email(user, request)
+        return Response({'message': 'Verification email sent to new address. You have been logged out.'})
+
+    
+
+class EmailTokenObtainPairView(TokenObtainPairView):
+    
+    serializer_class = EmailTokenObtainPairSerializer
+
+
+
+class UserProfileView(generics.RetrieveAPIView):
+    serializer_class = UserProfileSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
+    
+
+class LogoutView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        try:
+            refresh_token = request.data.get("refresh")
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response({"message": "Logged out successfully."}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

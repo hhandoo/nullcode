@@ -1,11 +1,12 @@
-from rest_framework import serializers, viewsets, pagination
+from rest_framework import serializers, viewsets, pagination, filters
 from rest_framework.response import Response
 from content_management_system.models import (
-    CourseCategory, CourseType, Course, CourseLesson, TopicType, LessonTopic
+    CourseCategory, CourseType, Course, CourseLesson, TopicType, LessonTopic, CourseComment
 )
 from rest_framework.filters import OrderingFilter, SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from .serializers import CourseCommentSerializer
 
 
 # Custom Pagination Class
@@ -24,6 +25,24 @@ class CustomPagination(pagination.PageNumberPagination):
             'previous_page_link': self.get_previous_link(),
             'results': data
         })
+    
+
+class CourseCommentViewSet(viewsets.ModelViewSet):
+    queryset = CourseComment.objects.filter(parent__isnull=True).select_related('user', 'course')
+    serializer_class = CourseCommentSerializer
+    pagination_class = CustomPagination
+    filter_backends = [filters.OrderingFilter]
+    ordering = ['-created_at']
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
 
 # Serializers
 class CourseCategorySerializer(serializers.ModelSerializer):
@@ -31,10 +50,13 @@ class CourseCategorySerializer(serializers.ModelSerializer):
         model = CourseCategory
         fields = ['id', 'category_name', 'category_slug', 'category_description', 'is_active']
 
+    permission_classes = [AllowAny]
+
 class CourseTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = CourseType
         fields = ['id', 'course_name', 'course_slug', 'course_description', 'is_active']
+    permission_classes = [AllowAny]
 
 class CourseSerializer(serializers.ModelSerializer):
     course_category = CourseCategorySerializer(read_only=True)
@@ -47,6 +69,7 @@ class CourseSerializer(serializers.ModelSerializer):
             'course_description', 'is_free_course', 'course_price', 'is_published',
             'created_at', 'updated_at', 'is_active'
         ]
+    permission_classes = [AllowAny]
 
 class CourseLessonSerializer(serializers.ModelSerializer):
     course = CourseSerializer(read_only=True)
@@ -57,11 +80,13 @@ class CourseLessonSerializer(serializers.ModelSerializer):
             'id', 'course', 'lesson_title', 'lesson_slug', 'lesson_description',
             'lesson_order', 'created_at', 'is_active'
         ]
+    permission_classes = [AllowAny]
 
 class TopicTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = TopicType
         fields = ['id', 'type_name', 'topic_slug', 'created_at', 'is_active']
+    permission_classes = [AllowAny]
 
 class LessonTopicSerializer(serializers.ModelSerializer):
     lesson = CourseLessonSerializer(read_only=True)
@@ -73,6 +98,7 @@ class LessonTopicSerializer(serializers.ModelSerializer):
             'id', 'lesson', 'type', 'topic_order', 'topic_title', 'topic_slug',
             'topic_content', 'created_at', 'is_active'
         ]
+    permission_classes = [AllowAny]
 
 # ViewSets
 class CourseCategoryViewSet(viewsets.ReadOnlyModelViewSet):
@@ -82,7 +108,7 @@ class CourseCategoryViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = [OrderingFilter]
     ordering_fields = ['category_name', 'id']
     ordering = ['category_name']
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
 class CourseTypeViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = CourseType.objects.filter(is_active=True)
@@ -91,7 +117,7 @@ class CourseTypeViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = [OrderingFilter]
     ordering_fields = ['course_name', 'id']
     ordering = ['course_name']
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
 class CourseViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Course.objects.filter(is_active=True)
@@ -102,7 +128,7 @@ class CourseViewSet(viewsets.ReadOnlyModelViewSet):
     ordering_fields = ['course_title', 'created_at', 'id']
     ordering = ['course_title']
     search_fields = ['course_title', 'course_description']
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
 class CourseLessonViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = CourseLesson.objects.filter(is_active=True)
@@ -111,7 +137,7 @@ class CourseLessonViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = [OrderingFilter]
     ordering_fields = ['lesson_title', 'lesson_order', 'id']
     ordering = ['lesson_order']
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
 
 class TopicTypeViewSet(viewsets.ReadOnlyModelViewSet):
@@ -121,7 +147,7 @@ class TopicTypeViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = [OrderingFilter]
     ordering_fields = ['type_name', 'id']
     ordering = ['type_name']
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
 
 class LessonTopicViewSet(viewsets.ReadOnlyModelViewSet):
@@ -131,5 +157,6 @@ class LessonTopicViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = [OrderingFilter]
     ordering_fields = ['topic_title', 'topic_order', 'id']
     ordering = ['topic_order']
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
+    
 

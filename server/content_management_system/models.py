@@ -1,5 +1,11 @@
 from django.db import models
 from django.utils import timezone
+from django.conf import settings
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+
 
 class CourseCategory(models.Model):
     category_name = models.CharField(max_length=100, unique=True)
@@ -52,6 +58,22 @@ class Course(models.Model):
 
     def __str__(self):
         return self.course_title
+    
+
+class CourseComment(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='comments')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='replies')
+    content = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Course Comment"
+        verbose_name_plural = "Course Comments"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.user.username} - {self.content[:30]}'
 
 class CourseLesson(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)

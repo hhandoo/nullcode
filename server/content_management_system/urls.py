@@ -6,7 +6,8 @@ from content_management_system.views import (
     CourseViewSet,
     CourseLessonViewSet,
     TopicTypeViewSet,
-    LessonTopicViewSet
+    LessonTopicViewSet,
+    CourseCommentViewSet
 )
 
 # Create a router and register the ViewSets
@@ -17,6 +18,7 @@ router.register(r'courses', CourseViewSet, basename='course')
 router.register(r'course-lessons', CourseLessonViewSet, basename='course-lesson')
 router.register(r'topic-types', TopicTypeViewSet, basename='topic-type')
 router.register(r'lesson-topics', LessonTopicViewSet, basename='lesson-topic')
+router.register(r'comments', CourseCommentViewSet, basename='course-comment')
 
 # Define the URL patterns
 urlpatterns = [

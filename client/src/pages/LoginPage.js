@@ -19,6 +19,11 @@ import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import LoginIcon from '@mui/icons-material/Login';
 import LockIcon from '@mui/icons-material/Lock';
 import api from '../services/api';
+import { setAccessToken } from '../util/tokenUtils';
+
+
+const {REACT_APP_API_URL,REACT_APP_LOGIN_USER} = process.env;
+
 
 const LoginPage = () => {
 
@@ -35,40 +40,16 @@ const LoginPage = () => {
         setLoading(true);
 
         try {
-            // const response = await axios.post('https://your-api.com/api/login', {
-            //     email,
-            //     password,
-            // });
-
-            // const { access_token, refresh_token } = response.data;
-
-            // if (rememberMe) {
-            //     localStorage.setItem('access_token', access_token);
-            //     localStorage.setItem('refresh_token', refresh_token);
-            // } else {
-            //     sessionStorage.setItem('access_token', access_token);
-            //     sessionStorage.setItem('refresh_token', refresh_token);
-            // }
-
-
-
-
-
-
-            // try {
-            //     const res = await api.publicPost('/auth/login/', { email, password });
-            //     const { access } = res.data;
-            //     setAccessToken(access, rememberMe); // store based on rememberMe
-            //     // redirect or update UI accordingly
-            // } catch (err) {
-            //     console.error(err);
-            //     alert('Login failed');
-            // }
-
+            const res = await api.publicPost(
+                REACT_APP_LOGIN_USER, 
+                { email, password },  
+                {withCredentials: true}
+            );
+            const { access } = res.data;
+            setAccessToken(access, rememberMe);
             navigate('/profile');
         } catch (err) {
-            console.error(err);
-            setError('Invalid email or password');
+            setError(JSON.stringify(err.response.data));
         } finally {
             setLoading(false);
         }

@@ -1,6 +1,6 @@
 // src/utils/tokenUtils.js
 
-const ACCESS_TOKEN_KEY = 'accessToken';
+const ACCESS_TOKEN_KEY = 'access';
 
 export const setAccessToken = (token, rememberMe = true) => {
     if (rememberMe) {

@@ -5,6 +5,8 @@ import { getAccessToken, setAccessToken, removeAccessToken } from '../util/token
 
 const baseURL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000';
 
+const {REACT_APP_REGENERATE_TOKENS} = process.env
+
 class ApiService {
     constructor() {
         this.api = axios.create({
@@ -33,7 +35,7 @@ class ApiService {
                 if (error.response?.status === 401 && !originalRequest._retry) {
                     originalRequest._retry = true;
                     try {
-                        const { data } = await this.api.post('/auth/token/refresh/');
+                        const { data } = await this.api.post(REACT_APP_REGENERATE_TOKENS);
                         const newAccessToken = data.access;
                         setAccessToken(newAccessToken);
                         this.api.defaults.headers['Authorization'] = `Bearer ${newAccessToken}`;

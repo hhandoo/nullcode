@@ -31,7 +31,8 @@ class CourseCommentViewSet(viewsets.ModelViewSet):
     queryset = CourseComment.objects.filter(parent__isnull=True).select_related('user', 'course')
     serializer_class = CourseCommentSerializer
     pagination_class = CustomPagination
-    filter_backends = [filters.OrderingFilter]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ['course']  # Enables filtering by course ID
     ordering = ['-created_at']
 
     def get_permissions(self):

@@ -10,7 +10,6 @@ from content_management_system.views import (
     CourseCommentViewSet
 )
 
-# Create a router and register the ViewSets
 router = DefaultRouter()
 router.register(r'course-categories', CourseCategoryViewSet, basename='course-category')
 router.register(r'course-types', CourseTypeViewSet, basename='course-type')
@@ -20,7 +19,6 @@ router.register(r'topic-types', TopicTypeViewSet, basename='topic-type')
 router.register(r'lesson-topics', LessonTopicViewSet, basename='lesson-topic')
 router.register(r'comments', CourseCommentViewSet, basename='course-comment')
 
-# Define the URL patterns
 urlpatterns = [
     path('', include(router.urls)),
 ]

@@ -11,7 +11,8 @@ from .utils import send_verification_email
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.utils.text import slugify
 from rest_framework_simplejwt.tokens import RefreshToken
-from .utils import blacklist_user_tokens  # Make sure it's imported
+from .utils import blacklist_user_tokens
+from rest_framework import status
 
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
@@ -20,7 +21,7 @@ class RegisterView(generics.CreateAPIView):
         user = serializer.save()
         send_verification_email(user, self.request)
 
-from rest_framework import status
+
 
 class VerifyEmailView(generics.GenericAPIView):
     permission_classes = [permissions.AllowAny]
@@ -58,33 +59,21 @@ class UpdateUsernameView(UpdateProfileView):
 class UpdateAvatarView(generics.UpdateAPIView):
     serializer_class = UpdateAvatarSerializer
     permission_classes = [permissions.IsAuthenticated]
-
     def get_object(self):
         return self.request.user
-
     def perform_update(self, serializer):
         user = self.get_object()
         old_avatar_path = user.avatar.path if user.avatar else None
-
-        # Save new avatar first
         serializer.save()
-
-        # Rename the new file after saving
         if user.avatar:
             ext = user.avatar.name.split('.')[-1]
             timestamp = int(time.time())
-            new_filename = f"{user.pk}_{slugify(user.first_name)}_{slugify(user.last_name)}_{slugify(user.username)}_{timestamp}.{ext}"
+            new_filename = f"{user.pk}_{slugify(user.username)}_{timestamp}.{ext}"
             new_path = os.path.join('avatars', new_filename)
             full_new_path = os.path.join(user.avatar.storage.location, new_path)
-
-            # Rename the file on disk
             os.rename(user.avatar.path, full_new_path)
-
-            # Update user's avatar path
             user.avatar.name = new_path
             user.save()
-
-        # Delete old file if it was replaced
         if old_avatar_path and os.path.exists(old_avatar_path):
             os.remove(old_avatar_path)
 
@@ -133,7 +122,6 @@ class ChangeEmailView(generics.GenericAPIView):
     
 
 class EmailTokenObtainPairView(TokenObtainPairView):
-    
     serializer_class = EmailTokenObtainPairSerializer
 
 
@@ -157,3 +145,12 @@ class LogoutView(APIView):
             return Response({"message": "Logged out successfully."}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class DeleteUserView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def delete(self, request):
+        user = request.user
+        user.delete()
+        return Response({'message': 'User account deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)

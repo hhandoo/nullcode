@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
     Container,
     TextField,
@@ -19,26 +19,24 @@ import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import LoginIcon from '@mui/icons-material/Login';
 import LockIcon from '@mui/icons-material/Lock';
 import api from '../services/api';
-import { setAccessToken } from '../util/tokenUtils';
+import { useAuth } from '../util/AuthContext';
 
 
-const {REACT_APP_API_URL,REACT_APP_LOGIN_USER} = process.env;
 
+const {REACT_APP_LOGIN_USER} = process.env;
 
 const LoginPage = () => {
-
+    const { login } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         setLoading(true);
-
         try {
             const res = await api.publicPost(
                 REACT_APP_LOGIN_USER, 
@@ -46,7 +44,7 @@ const LoginPage = () => {
                 {withCredentials: true}
             );
             const { access } = res.data;
-            setAccessToken(access, rememberMe);
+            login(access, rememberMe);
             navigate('/profile');
         } catch (err) {
             setError(JSON.stringify(err.response.data));

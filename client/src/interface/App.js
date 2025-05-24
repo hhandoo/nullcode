@@ -11,6 +11,8 @@ import NotFound from '../pages/NotFound';
 import Course from '../pages/Course';
 import Profile from '../pages/Profile';
 import Footer from '../component/Footer';
+import PrivateRoute from '../component/PrivateRoute'
+import PublicOnlyRoute from '../component/PublicOnlyRoute';
 
 import { Container } from '@mui/material';
 import DynamicBreadcrumbs from '../component/DynamicBreadcrumbs';
@@ -37,9 +39,9 @@ const AppBarData = {
     {
       page_name: "Profile",
       page_path: "/profile",
-      element: <Profile />,
+      element: <PrivateRoute><Profile /></PrivateRoute>,
       index: true,
-      is_in_RAB: true
+      is_in_RAB: false
     },
     {
       page_name: "Settings",
@@ -51,14 +53,14 @@ const AppBarData = {
     {
       page_name: "Login",
       page_path: "/login",
-      element: <LoginPage />,
+      element: <PublicOnlyRoute><LoginPage /></PublicOnlyRoute>,
       index: false,
       is_in_RAB: false
     },
     {
       page_name: "Login",
       page_path: "/register",
-      element: <RegisterPage />,
+      element: <PublicOnlyRoute><RegisterPage /></PublicOnlyRoute>,
       index: false,
       is_in_RAB: false
     },
@@ -67,7 +69,7 @@ const AppBarData = {
       page_path: "/course",
       element: <Course />,
       index: true,
-      is_in_RAB: true
+      is_in_RAB: false
     },
     {
       page_name: "About",

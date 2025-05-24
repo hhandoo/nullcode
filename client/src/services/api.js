@@ -4,14 +4,63 @@ import axios from 'axios';
 import { getAccessToken, setAccessToken, removeAccessToken } from '../util/tokenUtils';
 
 const baseURL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000';
+const { REACT_APP_REGENERATE_TOKENS } = process.env;
 
-const {REACT_APP_REGENERATE_TOKENS} = process.env
+let isRefreshing = false;
+let refreshSubscribers = [];
+
+function subscribeTokenRefresh(cb) {
+    refreshSubscribers.push(cb);
+}
+
+function onRefreshed(newToken) {
+    refreshSubscribers.forEach(cb => cb(newToken));
+    refreshSubscribers = [];
+}
+
+function handle401Error(apiInstance, error, REGENERATE_TOKENS) {
+    const originalRequest = error.config;
+
+    if (!originalRequest._retry) {
+        originalRequest._retry = true;
+
+        if (!isRefreshing) {
+            isRefreshing = true;
+
+            return apiInstance.post(REGENERATE_TOKENS, {}, { withCredentials: true })
+                .then(({ data }) => {
+                    const newAccessToken = data.access;
+                    setAccessToken(newAccessToken);
+                    apiInstance.defaults.headers['Authorization'] = `Bearer ${newAccessToken}`;
+                    onRefreshed(newAccessToken);
+                    return apiInstance(originalRequest);
+                })
+                .catch((refreshError) => {
+                    removeAccessToken();
+                    window.location.href = '/login';
+                    return Promise.reject(refreshError);
+                })
+                .finally(() => {
+                    isRefreshing = false;
+                });
+        }
+
+        return new Promise((resolve) => {
+            subscribeTokenRefresh((newToken) => {
+                originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
+                resolve(apiInstance(originalRequest));
+            });
+        });
+    }
+
+    return Promise.reject(error);
+}
 
 class ApiService {
     constructor() {
         this.api = axios.create({
             baseURL,
-            withCredentials: true, // allows sending cookies (for refresh token)
+            withCredentials: true,
             headers: {
                 'Content-Type': 'application/json',
             },
@@ -26,30 +75,10 @@ class ApiService {
             return config;
         });
 
-        // Refresh token if 401
+        // Handle 401 errors and refresh token
         this.api.interceptors.response.use(
             (response) => response,
-            async (error) => {
-                const originalRequest = error.config;
-
-                if (error.response?.status === 401 && !originalRequest._retry) {
-                    originalRequest._retry = true;
-                    try {
-                        const { data } = await this.api.post(REACT_APP_REGENERATE_TOKENS);
-                        const newAccessToken = data.access;
-                        setAccessToken(newAccessToken);
-                        this.api.defaults.headers['Authorization'] = `Bearer ${newAccessToken}`;
-                        originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
-                        return this.api(originalRequest);
-                    } catch (refreshError) {
-                        removeAccessToken();
-                        window.location.href = '/login'; // or use a custom logout handler
-                        return Promise.reject(refreshError);
-                    }
-                }
-
-                return Promise.reject(error);
-            }
+            (error) => handle401Error(this.api, error, REACT_APP_REGENERATE_TOKENS)
         );
     }
 
@@ -69,7 +98,6 @@ class ApiService {
         return this.api.delete(url, config);
     }
 
-    // Handle image/file upload
     upload(url, file, fieldName = 'file', additionalData = {}) {
         const formData = new FormData();
         formData.append(fieldName, file);
@@ -84,7 +112,6 @@ class ApiService {
         });
     }
 
-    // For unauthenticated endpoints (override headers)
     publicGet(url, config = {}) {
         const newConfig = { ...config };
         delete newConfig.headers?.Authorization;

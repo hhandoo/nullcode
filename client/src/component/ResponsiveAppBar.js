@@ -151,6 +151,7 @@ function ResponsiveAppBar(props) {
                   my: 2, mx: 1, display: 'block',
                   textTransform: 'none',
                   textAlign: 'center',
+                  fontWeight:'bold'
                 }}
               >
                 {page.page_name}

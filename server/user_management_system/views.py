@@ -145,7 +145,6 @@ class EmailTokenObtainPairView(TokenObtainPairView):
         return response
 class CookieTokenRefreshView(APIView):
     permission_classes = [permissions.AllowAny]
-
     def post(self, request):
         refresh_token = request.COOKIES.get('refresh_token')
 

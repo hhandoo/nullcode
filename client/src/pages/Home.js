@@ -1,4 +1,4 @@
-import { Container, Typography, Button, Box } from '@mui/material';
+import { Container, Typography, Button, Box, Stack } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
 import Featured from '../component/Featured';
 import Features from '../component/Features';
@@ -42,12 +42,17 @@ const featured_pages = [
     header: 'Apache Spark Fundamentals',
     footer: 'Learn the core concepts of Apache Spark for big data processing and analysis.',
     path: '/courses'
+  },{
+    image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Apache_Spark_logo.svg/250px-Apache_Spark_logo.svg.png',
+    header: 'Apache Spark Fundamentals',
+    footer: 'Learn the core concepts of Apache Spark for big data processing and analysis.',
+    path: '/courses'
   },
 ]
 
 const Home = (props) => {
   return (
-    <div>
+    <Stack direction='column'>
       <HeroSection>
         <Container maxWidth="md">
           <Typography
@@ -95,7 +100,7 @@ const Home = (props) => {
 
 
       <Features />
-    </div>
+    </Stack>
   );
 };
 

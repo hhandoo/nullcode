@@ -7,51 +7,37 @@ const { REACT_APP_GET_USER_PROFILE } = process.env;
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(!!getAccessToken());
+  const [isAuthenticated, setIsAuthenticated] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(true);
 
-  // Fetch user details if authenticated
   useEffect(() => {
-    const fetchUser = async () => {
-      const token = getAccessToken();
-      if (token) {
-        setIsAuthenticated(true);
-        try {
-          const res = await api.post(REACT_APP_GET_USER_PROFILE);
-          setCurrentUser(res.data);
-        } catch (err) {
-          console.error('Failed to fetch user profile:', err.response?.data || err.message);
-          // On error, consider logout or clearing auth state
-          setCurrentUser(null);
-          setIsAuthenticated(false);
-          removeAccessToken();
-        }
-      } else {
-        setIsAuthenticated(false);
-        setCurrentUser(null);
-      }
-      setLoading(false);
-    };
+    api.setAuthCallback(setIsAuthenticated);
 
-    fetchUser();
+    // Only attempt to fetch user if access token is present
+    const token = getAccessToken();
+    if (token) {
+      fetchUserProfile();
+    } else {
+      setIsAuthenticated(false);
+    }
   }, []);
 
-  const login = async (token, rememberMe = true) => {
-    setAccessToken(token, rememberMe);
-    setIsAuthenticated(true);
-    setLoading(true);
+  const fetchUserProfile = async () => {
     try {
       const res = await api.get(REACT_APP_GET_USER_PROFILE);
       setCurrentUser(res.data);
+      setIsAuthenticated(true);
     } catch (err) {
-      console.error('Failed to fetch user profile after login:', err.response?.data || err.message);
+      console.error('Failed to fetch user profile:', err.response?.data || err.message);
       setCurrentUser(null);
       setIsAuthenticated(false);
       removeAccessToken();
-    } finally {
-      setLoading(false);
     }
+  };
+
+  const login = async (token, rememberMe = true) => {
+    setAccessToken(token, rememberMe);
+    await fetchUserProfile();
   };
 
   const logout = () => {
@@ -61,7 +47,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, currentUser, login, logout, loading }}>
+    <AuthContext.Provider value={{ isAuthenticated, currentUser, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

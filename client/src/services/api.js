@@ -1,13 +1,13 @@
-// src/services/api.js
-
 import axios from 'axios';
 import { getAccessToken, setAccessToken, removeAccessToken } from '../util/tokenUtils';
 
 const baseURL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000';
-const { REACT_APP_REGENERATE_TOKENS } = process.env;
+export const REGENERATE_TOKENS = process.env.REACT_APP_REGENERATE_TOKENS || '/auth/token/refresh/';
 
 let isRefreshing = false;
 let refreshSubscribers = [];
+
+let setIsAuthenticatedCallback = null;
 
 function subscribeTokenRefresh(cb) {
     refreshSubscribers.push(cb);
@@ -18,8 +18,17 @@ function onRefreshed(newToken) {
     refreshSubscribers = [];
 }
 
-function handle401Error(apiInstance, error, REGENERATE_TOKENS) {
+function rejectSubscribers() {
+    refreshSubscribers.forEach(cb => cb(null));
+    refreshSubscribers = [];
+}
+
+function handle401Error(apiInstance, error) {
     const originalRequest = error.config;
+
+    if (!originalRequest || !originalRequest.headers || error.response?.status !== 401) {
+        return Promise.reject(error);
+    }
 
     if (!originalRequest._retry) {
         originalRequest._retry = true;
@@ -31,13 +40,24 @@ function handle401Error(apiInstance, error, REGENERATE_TOKENS) {
                 .then(({ data }) => {
                     const newAccessToken = data.access;
                     setAccessToken(newAccessToken);
-                    apiInstance.defaults.headers['Authorization'] = `Bearer ${newAccessToken}`;
+
+                    if (setIsAuthenticatedCallback) {
+                        setIsAuthenticatedCallback(true);
+                    }
+
                     onRefreshed(newAccessToken);
+
+                    originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
                     return apiInstance(originalRequest);
                 })
                 .catch((refreshError) => {
                     removeAccessToken();
-                    window.location.href = '/login';
+                    if (setIsAuthenticatedCallback) {
+                        setIsAuthenticatedCallback(false);
+                    }
+
+                    rejectSubscribers();
+
                     return Promise.reject(refreshError);
                 })
                 .finally(() => {
@@ -45,10 +65,14 @@ function handle401Error(apiInstance, error, REGENERATE_TOKENS) {
                 });
         }
 
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             subscribeTokenRefresh((newToken) => {
-                originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
-                resolve(apiInstance(originalRequest));
+                if (!newToken) {
+                    reject(new Error('Token refresh failed'));
+                } else {
+                    originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
+                    resolve(apiInstance(originalRequest));
+                }
             });
         });
     }
@@ -66,20 +90,28 @@ class ApiService {
             },
         });
 
-        // Attach token before every request
         this.api.interceptors.request.use((config) => {
             const token = getAccessToken();
-            if (token) {
+
+            // Prevent sending access token to the refresh endpoint
+            const isRefreshUrl = config.url?.includes(REGENERATE_TOKENS);
+
+            if (token && !isRefreshUrl) {
                 config.headers['Authorization'] = `Bearer ${token}`;
             }
+
             return config;
         });
 
-        // Handle 401 errors and refresh token
         this.api.interceptors.response.use(
             (response) => response,
-            (error) => handle401Error(this.api, error, REACT_APP_REGENERATE_TOKENS)
+            (error) => handle401Error(this.api, error)
         );
+    }
+
+    // Allow external injection of authentication handler
+    setAuthCallback(cb) {
+        setIsAuthenticatedCallback = cb;
     }
 
     get(url, config = {}) {
@@ -114,7 +146,9 @@ class ApiService {
 
     publicGet(url, config = {}) {
         const newConfig = { ...config };
-        delete newConfig.headers?.Authorization;
+        if (newConfig.headers && newConfig.headers.Authorization) {
+            delete newConfig.headers.Authorization;
+        }
         return axios.get(`${baseURL}${url}`, {
             ...newConfig,
             withCredentials: true,
@@ -123,7 +157,9 @@ class ApiService {
 
     publicPost(url, data = {}, config = {}) {
         const newConfig = { ...config };
-        delete newConfig.headers?.Authorization;
+        if (newConfig.headers && newConfig.headers.Authorization) {
+            delete newConfig.headers.Authorization;
+        }
         return axios.post(`${baseURL}${url}`, data, {
             ...newConfig,
             withCredentials: true,

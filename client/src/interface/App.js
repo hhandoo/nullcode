@@ -1,6 +1,5 @@
 import ResponsiveAppBar from '../component/ResponsiveAppBar';
 import { Routes, Route } from 'react-router-dom';
-
 import Home from '../pages/Home';
 import Settings from '../pages/Settings';
 import CoursesMaster from '../pages/CoursesMaster';
@@ -13,12 +12,12 @@ import Profile from '../pages/Profile';
 import Footer from '../component/Footer';
 import PrivateRoute from '../component/PrivateRoute'
 import PublicOnlyRoute from '../component/PublicOnlyRoute';
-
 import { Container } from '@mui/material';
 import DynamicBreadcrumbs from '../component/DynamicBreadcrumbs';
 import SchoolIcon from '@mui/icons-material/School';
+
 const AppBarData = {
-  website_name: "yalsworld.com",
+  website_name: "YALS World",
   icon: <SchoolIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} color='inherit' />,
   icon2: <SchoolIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} color='inherit' />,
   pages: [
@@ -90,7 +89,7 @@ const AppBarData = {
 
 function App() {
   return (
-    <Container maxWidth="xl">
+    <Container maxWidth='xl'>
       <ResponsiveAppBar AppBarData={AppBarData} />
       <DynamicBreadcrumbs />
 

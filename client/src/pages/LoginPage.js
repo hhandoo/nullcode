@@ -44,7 +44,7 @@ const LoginPage = () => {
                 {withCredentials: true}
             );
             const { access } = res.data;
-            login(access, rememberMe);
+            login(access, true);
             navigate('/profile');
         } catch (err) {
             setError(JSON.stringify(err.response.data));
@@ -93,15 +93,7 @@ const LoginPage = () => {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                         />
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    checked={rememberMe}
-                                    onChange={(e) => setRememberMe(e.target.checked)}
-                                />
-                            }
-                            label="Remember me"
-                        />
+                        
                     </Box>
                 </CardContent>
                 <CardActions sx={{ flexDirection: 'column', alignItems: 'center', mb: 2, px: 6 }}>

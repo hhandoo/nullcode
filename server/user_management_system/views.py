@@ -1,5 +1,9 @@
 import os
 import time
+import io
+import json
+import zipfile
+from django.http import FileResponse
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -83,28 +87,29 @@ class ChangePasswordView(generics.UpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         user = request.user
-        serializer = self.get_serializer(data=request.data)
+        serializer = self.get_serializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
 
-        if not user.check_password(serializer.validated_data['old_password']):
-            return Response({'old_password': 'Wrong password'}, status=status.HTTP_400_BAD_REQUEST)
-
+        # If validation passed, change the password
         user.set_password(serializer.validated_data['new_password'])
         user.save()
 
         blacklist_user_tokens(user)
 
-        return Response({
+        response = Response({
             'message': 'Password changed successfully. You have been logged out.'
         }, status=status.HTTP_200_OK)
+
+        response.delete_cookie('refresh_token')
+
+        return response
+
 
 class ChangeEmailView(generics.GenericAPIView):
     serializer_class = ChangeEmailSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
-        refresh_token = request.data.get("refresh")
-
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -117,7 +122,15 @@ class ChangeEmailView(generics.GenericAPIView):
         blacklist_user_tokens(user)
 
         send_verification_email(user, request)
-        return Response({'message': 'Verification email sent to new address. You have been logged out.'})
+
+        response = Response({'message': 'Verification email sent to new address. You have been logged out.'})
+
+        # Clear refresh token cookie
+        response.delete_cookie('refresh_token')
+
+        return response
+
+
 
     
 
@@ -174,10 +187,10 @@ class LogoutView(APIView):
 
     def post(self, request):
         try:
+            refresh_token = request.COOKIES.get("refresh_token")
             response = Response({"message": "Logged out successfully."}, status=status.HTTP_200_OK)
             response.delete_cookie('refresh_token')
             
-            refresh_token = request.COOKIES.get("refresh_token") or request.data.get("refresh")
             if refresh_token:
                 token = RefreshToken(refresh_token)
                 token.blacklist()
@@ -188,10 +201,59 @@ class LogoutView(APIView):
 
 
 
+
 class DeleteUserView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
+
+
+
     def delete(self, request):
         user = request.user
+        user_data = {
+            "username": user.username,
+            "email": user.email,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "date_joined": user.date_joined.isoformat(),
+        }
+
+        zip_buffer = io.BytesIO()
+
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+            # Write user data as JSON
+            json_bytes = json.dumps(user_data, indent=4).encode('utf-8')
+            zip_file.writestr('user_data.json', json_bytes)
+
+            # Write avatar if exists
+            if user.avatar:
+                avatar_path = user.avatar.path
+                if os.path.exists(avatar_path):
+                    zip_file.write(avatar_path, arcname='avatar.jpg')
+
+        zip_buffer.seek(0)
+
+        # Backup zip filename
+        filename = f"user_backup_{user.username}.zip"
+
+        # Remove user
         user.delete()
-        return Response({'message': 'User account deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
+
+
+        refresh_token = request.COOKIES.get("refresh_token")
+
+        if refresh_token:
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+
+
+        response = FileResponse(
+            zip_buffer,
+            as_attachment=True,
+            filename=filename,
+            content_type='application/zip'
+        )
+        response.delete_cookie('refresh_token')
+        
+
+        return response

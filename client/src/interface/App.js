@@ -11,10 +11,12 @@ import Course from '../pages/Course';
 import Profile from '../pages/Profile';
 import Footer from '../component/Footer';
 import PrivateRoute from '../component/PrivateRoute'
+import DeleteAccount from '../pages/DeleteAccount';
 import PublicOnlyRoute from '../component/PublicOnlyRoute';
 import { Container } from '@mui/material';
 import DynamicBreadcrumbs from '../component/DynamicBreadcrumbs';
 import SchoolIcon from '@mui/icons-material/School';
+import EmailVerificationPage from '../pages/EmailVerificationSent';
 
 const AppBarData = {
   website_name: "YALS World",
@@ -64,6 +66,13 @@ const AppBarData = {
       is_in_RAB: false
     },
     {
+      page_name: "Delete",
+      page_path: "/delete",
+      element: <PrivateRoute><DeleteAccount /></PrivateRoute>,
+      index: false,
+      is_in_RAB: false
+    },
+    {
       page_name: "Course",
       page_path: "/course",
       element: <Course />,
@@ -76,6 +85,14 @@ const AppBarData = {
       element: <About />,
       index: false,
       is_in_RAB: true
+    },
+    
+    {
+      page_name: "Email Verification Sent",
+      page_path: "/email-verification-sent",
+      element: <PublicOnlyRoute><EmailVerificationPage /></PublicOnlyRoute>,
+      index: false,
+      is_in_RAB: false
     },
     {
       page_name: "Not found",

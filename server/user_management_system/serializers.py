@@ -16,11 +16,14 @@ from django.contrib.auth.hashers import check_password
 User = get_user_model()
 
 def validate_username(value):
+    # Only letters, numbers, underscores allowed
     if not re.match(r'^[A-Za-z0-9_]+$', value):
         raise ValidationError('Username can only contain letters, numbers, and underscores.')
-    if len(value) < 8 and len(value) >= 32:
-        raise ValidationError('Username must be at least 8 and max 32 characters long.')
+    # Length must be between 8 and 32 (inclusive)
+    if len(value) < 8 or len(value) > 32:
+        raise ValidationError('Username must be at least 8 and at most 32 characters long.')
     return value
+
 
 
 
@@ -108,10 +111,22 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
 
 
 class UpdateUsernameSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(validators=[validate_username])
+    username = serializers.CharField()
+
     class Meta:
         model = CustomUser
         fields = ('username',)
+
+    def validate_username(self, value):
+        # Use your standalone validate_username function
+        validate_username(value)  # will raise ValidationError if invalid
+
+        # Check uniqueness as well
+        user = self.context['request'].user
+        if CustomUser.objects.filter(username=value).exclude(pk=user.pk).exists():
+            raise serializers.ValidationError("Username already taken.")
+
+        return value
 
 
 class UpdateAvatarSerializer(serializers.ModelSerializer):
@@ -121,8 +136,30 @@ class UpdateAvatarSerializer(serializers.ModelSerializer):
 
 
 class ChangePasswordSerializer(serializers.Serializer):
-    old_password = serializers.CharField(write_only=True)
-    new_password = serializers.CharField(write_only=True, validators=[validate_password])
+    old_password = serializers.CharField(write_only=True, required=True)
+    new_password = serializers.CharField(write_only=True, required=True)
+    confirm_new_password = serializers.CharField(write_only=True, required=True)
+
+    def validate_old_password(self, value):
+        user = self.context['request'].user
+        if not user.check_password(value):
+            raise serializers.ValidationError("Old password is incorrect")
+        return value
+
+    def validate(self, attrs):
+        new_password = attrs.get('new_password')
+        confirm_new_password = attrs.get('confirm_new_password')
+
+        if new_password != confirm_new_password:
+            raise serializers.ValidationError({"confirm_new_password": "New passwords do not match"})
+
+        try:
+            # Validate password with Django's validators (checks min length, complexity, etc)
+            validate_password(new_password, user=self.context['request'].user)
+        except ValidationError as e:
+            raise serializers.ValidationError({"new_password": list(e.messages)})
+
+        return attrs
 
 
 class ChangeEmailSerializer(serializers.Serializer):

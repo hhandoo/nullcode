@@ -1,171 +1,169 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
-    Container,
-    TextField,
-    Button,
-    Checkbox,
-    FormControlLabel,
-    Typography,
-    Card,
-    CardContent,
-    CardActions,
-    Box,
-    Alert,
-    Link,
-    CircularProgress,
-    Grid
-} from '@mui/material';
-import axios from 'axios';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
-import HowToRegIcon from '@mui/icons-material/HowToReg';
-const RegisterPage = () => {
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [agreeToTerms, setAgreeToTerms] = useState(false);
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
+  Card,
+  CardContent,
+  Typography,
+  TextField,
+  Button,
+  CircularProgress,
+  Alert,
+  Collapse,
+  IconButton,
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import api from "../services/api";
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError('');
+const { REACT_APP_REGISTER_USER } = process.env;
 
-        if (password !== confirmPassword) {
-            setError('Passwords do not match');
-            return;
-        }
+export default function RegisterUser() {
+  const [formData, setFormData] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    password: "",
+    confirm_password: "",
+  });
 
-        if (!agreeToTerms) {
-            setError('You must agree to the terms and conditions');
-            return;
-        }
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+  const [successAlert, setSuccessAlert] = useState(false);
 
-        setLoading(true);
-        try {
-            await axios.post('https://your-api.com/api/register', {
-                first_name: firstName,
-                last_name: lastName,
-                email,
-                password,
-            });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-            navigate('/login');
-        } catch (err) {
-            console.error(err);
-            setError(err?.response?.data?.message || 'Registration failed');
-        } finally {
-            setLoading(false);
-        }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+        // Fake delay to simulate backend
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+
+        const response = await api.publicPost(REACT_APP_REGISTER_USER, formData, {
+        withCredentials: true,
+        });
+
+        setSuccessAlert(true);
+        setFormData({
+        first_name: "",
+        last_name: "",
+        email: "",
+        password: "",
+        confirm_password: "",
+        });
+
+        window.location = "/email-verification-sent";
+    } catch (err) {
+        setError(err.response?.data?.message || "Registration failed.");
+    } finally {
+        setIsSubmitting(false);
+    }
     };
 
-    return (
-        <Container maxWidth="sm" sx={{ mt: 10 }}>
-            <Card variant="outlined">
-                <CardContent>
-                    <Grid container justifyContent="center" sx={{ mt: 2 }}>
-                        <HowToRegIcon color="primary" sx={{ width: 50, height: 50 }} />
-                    </Grid>
-                    <Typography variant="h3" align="center" gutterBottom sx={{ mt: 2 }}>
-                        Register
-                    </Typography>
-                    <Typography variant="body1" align="center" color="text.secondary">
-                        Join us by creating your account below.
-                    </Typography>
 
-                    {error && <Alert sx={{ mt: 2 }} severity="error">{error}</Alert>}
+  return (
+    <Card sx={{ maxWidth: 500, margin: "auto", mt: 5, p: 2, boxShadow: 3 }}>
+      <CardContent>
+        <Typography variant="h5" gutterBottom>
+          Register
+        </Typography>
 
-                    <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2, pl: 2, pr: 2 }}>
-                        <TextField
-                            label="First Name"
-                            variant="outlined"
-                            fullWidth
-                            required
-                            margin="normal"
-                            size="small"
-                            value={firstName}
-                            onChange={(e) => setFirstName(e.target.value)}
-                        />
-                        <TextField
-                            label="Last Name"
-                            variant="outlined"
-                            fullWidth
-                            required
-                            margin="normal"
-                            size="small"
-                            value={lastName}
-                            onChange={(e) => setLastName(e.target.value)}
-                        />
-                        <TextField
-                            label="Email"
-                            variant="outlined"
-                            fullWidth
-                            required
-                            margin="normal"
-                            size="small"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
-                        <TextField
-                            label="Password"
-                            variant="outlined"
-                            type="password"
-                            fullWidth
-                            required
-                            margin="normal"
-                            size="small"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                        />
-                        <TextField
-                            label="Confirm Password"
-                            variant="outlined"
-                            type="password"
-                            fullWidth
-                            required
-                            margin="normal"
-                            size="small"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                        />
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    checked={agreeToTerms}
-                                    onChange={(e) => setAgreeToTerms(e.target.checked)}
-                                />
-                            }
-                            label="I agree to the terms and conditions"
-                        />
-                    </Box>
-                </CardContent>
-                <CardActions sx={{ flexDirection: 'column', alignItems: 'center', mb: 2, px: 6 }}>
-                    <Button
-                        fullWidth
-                        sx={{ textTransform: 'none', fontWeight: 'bold' }}
-                        variant="contained"
-                        color="primary"
-                        size="small"
-                        type="submit"
-                        onClick={handleSubmit}
-                        disabled={loading}
-                        startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <PersonAddIcon />}
-                    >
-                        {loading ? 'Registering...' : 'Register'}
-                    </Button>
-                    <Typography variant="body2" sx={{ mt: 4 }}>
-                        Already have an account?{' '}
-                        <Link component={RouterLink} to="/login">
-                            Login
-                        </Link>
-                    </Typography>
-                </CardActions>
-            </Card>
-        </Container>
-    );
-};
+        <Collapse in={successAlert}>
+          <Alert
+            severity="success"
+            sx={{ mb: 2 }}
+            action={
+              <IconButton
+                size="small"
+                onClick={() => setSuccessAlert(false)}
+                color="inherit"
+              >
+                <CloseIcon fontSize="inherit" />
+              </IconButton>
+            }
+          >
+            Registration successful!
+          </Alert>
+        </Collapse>
 
-export default RegisterPage;
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
+
+        <form onSubmit={handleSubmit}>
+          <TextField
+            name="first_name"
+            label="First Name"
+            value={formData.first_name}
+            onChange={handleChange}
+            fullWidth
+            size="small"
+            margin="normal"
+            required
+          />
+          <TextField
+            name="last_name"
+            label="Last Name"
+            value={formData.last_name}
+            onChange={handleChange}
+            fullWidth
+            size="small"
+            margin="normal"
+            required
+          />
+          <TextField
+            name="email"
+            label="Email"
+            type="email"
+            value={formData.email}
+            onChange={handleChange}
+            fullWidth
+            size="small"
+            margin="normal"
+            required
+          />
+          <TextField
+            name="password"
+            label="Password"
+            type="password"
+            size="small"
+            value={formData.password}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+          <TextField
+            name="confirm_password"
+            label="Confirm Password"
+            type="password"
+            size="small"
+            value={formData.confirm_password}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            fullWidth
+            sx={{ mt: 2, textTransform: 'none', fontWeight: 'bold' }}
+            disabled={isSubmitting}
+            startIcon={isSubmitting && <CircularProgress size={20} />}
+            >
+            {isSubmitting ? "Registering..." : "Register"}
+            </Button>
+
+        </form>
+      </CardContent>
+    </Card>
+  );
+}

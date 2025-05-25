@@ -137,7 +137,7 @@ class ApiService {
             formData.append(key, additionalData[key]);
         }
 
-        return this.api.post(url, formData, {
+        return this.api.put(url, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },

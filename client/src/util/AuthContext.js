@@ -13,7 +13,6 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     api.setAuthCallback(setIsAuthenticated);
 
-    // Only attempt to fetch user if access token is present
     const token = getAccessToken();
     if (token) {
       fetchUserProfile();
@@ -47,7 +46,15 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, currentUser, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        isAuthenticated,
+        currentUser,
+        login,
+        logout,
+        refreshUser: fetchUserProfile, // Exposed refresh function
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

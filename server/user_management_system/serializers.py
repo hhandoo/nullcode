@@ -164,3 +164,24 @@ class ChangePasswordSerializer(serializers.Serializer):
 
 class ChangeEmailSerializer(serializers.Serializer):
     new_email = serializers.EmailField()
+
+
+
+class ResendVerificationEmailSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
+class RequestPasswordResetSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
+
+class ResetPasswordConfirmSerializer(serializers.Serializer):
+    new_password = serializers.CharField(write_only=True)
+    confirm_password = serializers.CharField(write_only=True)
+
+    def validate(self, data):
+        if data['new_password'] != data['confirm_password']:
+            raise serializers.ValidationError("Passwords do not match")
+        validate_password(data['new_password'])
+        return data

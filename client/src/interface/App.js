@@ -17,6 +17,7 @@ import { Container } from '@mui/material';
 import DynamicBreadcrumbs from '../component/DynamicBreadcrumbs';
 import SchoolIcon from '@mui/icons-material/School';
 import EmailVerificationPage from '../pages/EmailVerificationSent';
+import ProblemsSigningIn from '../pages/ProblemsSigningIn';
 
 const AppBarData = {
   website_name: "YALS World",
@@ -91,6 +92,15 @@ const AppBarData = {
       page_name: "Email Verification Sent",
       page_path: "/email-verification-sent",
       element: <PublicOnlyRoute><EmailVerificationPage /></PublicOnlyRoute>,
+      index: false,
+      is_in_RAB: false
+    },
+    
+
+    {
+      page_name: "Problems Signing In",
+      page_path: "/problems-signing-in",
+      element: <PublicOnlyRoute><ProblemsSigningIn /></PublicOnlyRoute>,
       index: false,
       is_in_RAB: false
     },

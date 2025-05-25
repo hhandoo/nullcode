@@ -13,5 +13,9 @@ urlpatterns = [
     path('update-avatar/', UpdateAvatarView.as_view(), name='update-avatar'),
     path('change-password/', ChangePasswordView.as_view(), name='change-password'),
     path('change-email/', ChangeEmailView.as_view(), name='change-email'),
-    path('delete-account/', DeleteUserView.as_view(), name='delete-account')
+    path('delete-account/', DeleteUserView.as_view(), name='delete-account'),
+
+    path('resend-verification-email/', ResendVerificationEmailView.as_view()),
+    path('request-password-reset/', RequestPasswordResetView.as_view()),
+    path('reset-password/<uidb64>/<token>/', ResetPasswordConfirmView.as_view(), name='reset-password-confirm'),
 ]

@@ -8,7 +8,7 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth.tokens import default_token_generator
-from django.utils.http import urlsafe_base64_decode
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from .models import CustomUser
 from .serializers import *
 from .utils import send_verification_email
@@ -17,6 +17,8 @@ from django.utils.text import slugify
 from rest_framework_simplejwt.tokens import RefreshToken
 from .utils import blacklist_user_tokens
 from rest_framework import status
+from django.urls import reverse
+from django.utils.encoding import force_bytes
 
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
@@ -254,6 +256,76 @@ class DeleteUserView(APIView):
             content_type='application/zip'
         )
         response.delete_cookie('refresh_token')
-        
-
         return response
+    
+
+
+class ResendVerificationEmailView(APIView):
+    permission_classes = [permissions.AllowAny]
+    serializer_class = ResendVerificationEmailSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        email = serializer.validated_data['email']
+        user = CustomUser.objects.filter(email=email).first()
+
+        if user:
+            if user.is_verified:
+                return Response({'message': 'Email is already verified.'}, status=status.HTTP_200_OK)
+            send_verification_email(user, request)
+        
+        # Always return success message to prevent email enumeration
+        return Response({'message': 'If an account with that email exists, a verification email has been resent.'}, status=status.HTTP_200_OK)
+    
+
+
+class RequestPasswordResetView(APIView):
+    permission_classes = [permissions.AllowAny]
+    serializer_class = RequestPasswordResetSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        email = serializer.validated_data['email']
+        user = CustomUser.objects.filter(email=email).first()
+        if user:
+            from .utils import send_password_reset_email
+            send_password_reset_email(user, request)
+
+        return Response({'message': 'If an account with that email exists, a reset link has been sent.'}, status=status.HTTP_200_OK)
+
+
+
+def send_password_reset_email(user, request):
+    uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+    token = default_token_generator.make_token(user)
+    reset_link = request.build_absolute_uri(
+        reverse('reset-password-confirm', kwargs={'uidb64': uidb64, 'token': token})
+    )
+    # Send this link via email
+    print("Reset Password Link:", reset_link)
+
+
+class ResetPasswordConfirmView(APIView):
+    permission_classes = [permissions.AllowAny]
+    serializer_class = ResetPasswordConfirmSerializer
+
+    def post(self, request, uidb64, token):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            uid = urlsafe_base64_decode(uidb64).decode()
+            user = CustomUser.objects.get(pk=uid)
+        except Exception:
+            return Response({'error': 'Invalid or expired token'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not default_token_generator.check_token(user, token):
+            return Response({'error': 'Invalid or expired token'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.set_password(serializer.validated_data['new_password'])
+        user.save()
+        return Response({'message': 'Password has been reset successfully.'}, status=status.HTTP_200_OK)

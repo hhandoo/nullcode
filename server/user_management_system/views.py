@@ -11,7 +11,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from .models import CustomUser
 from .serializers import *
-from .utils import send_verification_email, send_email_change_verification_email
+from .utils import send_verification_email, send_password_reset_email
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.utils.text import slugify
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -26,7 +26,6 @@ class RegisterView(generics.CreateAPIView):
     def perform_create(self, serializer):
         user = serializer.save()
         send_verification_email(user, self.request)
-
 class VerifyEmailView(APIView):
     permission_classes = [permissions.AllowAny]
 
@@ -49,18 +48,14 @@ class VerifyEmailView(APIView):
             return Response({"message": "Email verified successfully."}, status=status.HTTP_200_OK)
 
         return Response({"error": "Invalid or expired token."}, status=status.HTTP_400_BAD_REQUEST)
-
-
 class UpdateProfileView(generics.UpdateAPIView):
     serializer_class = UpdateProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
         return self.request.user
-
 class UpdateUsernameView(UpdateProfileView):
     serializer_class = UpdateUsernameSerializer
-
 class UpdateAvatarView(generics.UpdateAPIView):
     serializer_class = UpdateAvatarSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -81,7 +76,6 @@ class UpdateAvatarView(generics.UpdateAPIView):
             user.save()
         if old_avatar_path and os.path.exists(old_avatar_path):
             os.remove(old_avatar_path)
-
 class ChangePasswordView(generics.UpdateAPIView):
     serializer_class = ChangePasswordSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -104,7 +98,6 @@ class ChangePasswordView(generics.UpdateAPIView):
         response.delete_cookie('refresh_token')
 
         return response
-
 class ChangeEmailView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -134,11 +127,6 @@ class ChangeEmailView(APIView):
         }, status=status.HTTP_200_OK)
         res.delete_cookie('refresh_token')
         return res
-
-
-
-    
-
 class EmailTokenObtainPairView(TokenObtainPairView):
     serializer_class = EmailTokenObtainPairSerializer
 
@@ -175,18 +163,12 @@ class CookieTokenRefreshView(APIView):
             return Response({'access': access_token})
         except Exception:
             return Response({'detail': 'Invalid refresh token'}, status=status.HTTP_401_UNAUTHORIZED)
-
-
-
-
 class UserProfileView(generics.RetrieveAPIView):
     serializer_class = UserProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
         return self.request.user
-    
-
 class LogoutView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -203,16 +185,8 @@ class LogoutView(APIView):
             return response
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-
-
-
 class DeleteUserView(APIView):
     permission_classes = [permissions.IsAuthenticated]
-
-
-
-
     def delete(self, request):
         user = request.user
         user_data = {
@@ -260,8 +234,6 @@ class DeleteUserView(APIView):
         )
         response.delete_cookie('refresh_token')
         return response
-    
-
 class ResendVerificationEmailView(APIView):
     permission_classes = [permissions.AllowAny]
     serializer_class = ResendVerificationEmailSerializer
@@ -286,9 +258,6 @@ class ResendVerificationEmailView(APIView):
         
         # Always return success message to prevent email enumeration
         return Response({'message': 'If an account with that email exists, a verification email has been resent.'}, status=status.HTTP_200_OK)
-
-
-
 class RequestPasswordResetView(APIView):
     permission_classes = [permissions.AllowAny]
     serializer_class = RequestPasswordResetSerializer
@@ -300,23 +269,9 @@ class RequestPasswordResetView(APIView):
         email = serializer.validated_data['email']
         user = CustomUser.objects.filter(email=email).first()
         if user:
-            from .utils import send_password_reset_email
             send_password_reset_email(user, request)
 
         return Response({'message': 'If an account with that email exists, a reset link has been sent.'}, status=status.HTTP_200_OK)
-
-
-
-def send_password_reset_email(user, request):
-    uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
-    token = default_token_generator.make_token(user)
-    reset_link = request.build_absolute_uri(
-        reverse('reset-password-confirm', kwargs={'uidb64': uidb64, 'token': token})
-    )
-    # Send this link via email
-    print("Reset Password Link:", reset_link)
-
-
 class ResetPasswordConfirmView(APIView):
     permission_classes = [permissions.AllowAny]
     serializer_class = ResetPasswordConfirmSerializer

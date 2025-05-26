@@ -1,84 +1,109 @@
-import React, { useEffect, useState } from "react";
+import  { useEffect, useState } from "react";
 import {
-  Box,
-  Typography,
-  CircularProgress,
   Container,
-  Paper,
+  Typography,
+  Box,
+  CircularProgress,
   Alert,
+  Card,
+  CardContent,
   Button,
 } from "@mui/material";
+import { CheckCircleOutline, ErrorOutline } from "@mui/icons-material";
 import { useParams, useNavigate } from "react-router-dom";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
-import api from "../services/api"; // Your axios instance
+import api from "../services/api"; // your custom API wrapper
 
-export default function EmailVerificationPage() {
-  const { uid, token } = useParams();
-  const [status, setStatus] = useState("loading"); // 'loading' | 'success' | 'error'
+const { REACT_APP_VERIFY_USER } = process.env;
+
+const VerifyEmail = () => {
+  const { uidb64, token } = useParams();
+  const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
+  const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const verifyEmail = async () => {
       try {
-        const response = await api.get(
-          `/api/users/verify-email/${uid}/${token}/`
+        const res = await api.publicGet(
+          `${REACT_APP_VERIFY_USER}${uidb64}/${token}/`
         );
-        setStatus("success");
-        setMessage("Your email has been successfully verified!");
+        setMessage(JSON.stringify(res.data));
+        setSuccess(true);
       } catch (err) {
-        setStatus("error");
         setMessage(
-          err.response?.data?.message || "Verification link is invalid or expired."
+          err.response?.data?.detail ||
+          err.response?.data?.message ||
+          "Verification failed. The link may be invalid or expired."
         );
+        setSuccess(false);
+      } finally {
+        setLoading(false);
       }
     };
 
     verifyEmail();
-  }, [uid, token]);
+  }, [uidb64, token]);
 
-  const handleGoHome = () => {
-    navigate("/");
-  };
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => {
+        navigate("/login");
+      }, 5000); // redirect after 3 seconds
+
+      return () => clearTimeout(timer); // cleanup
+    }
+  }, [success, navigate]);
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 8 }}>
-      <Paper elevation={4} sx={{ p: 4, borderRadius: 3 }}>
-        <Box textAlign="center">
-          {status === "loading" && <CircularProgress size={50} />}
+    <Container maxWidth="sm" sx={{ mt: 10 }}>
+      <Card variant="outlined" sx={{ p: 6 }}>
+        <CardContent>
+          <Box display="flex" justifyContent="center" mb={2}>
+            {loading ? (
+              <CircularProgress size={40} />
+            ) : success ? (
+              <CheckCircleOutline color="success" sx={{ fontSize: 48 }} />
+            ) : (
+              <ErrorOutline color="error" sx={{ fontSize: 48 }} />
+            )}
+          </Box>
 
-          {status === "success" && (
+          <Typography variant="h4" align="center" gutterBottom>
+            {loading
+              ? "Verifying..."
+              : success
+              ? "Verification Successful"
+              : "Verification Failed"}
+          </Typography>
+
+
+          <Typography variant="body2" align="center" color="text.secondary" gutterBottom>
+            This page will auto navigate to the login page on successful verification in 5 seconds.
+          </Typography>
+
+          {!loading && (
             <>
-              <CheckCircleOutlineIcon color="success" sx={{ fontSize: 64, mb: 2 }} />
-              <Typography variant="h5" gutterBottom>
-                Email Verified
-              </Typography>
-              <Alert severity="success" sx={{ mb: 2 }}>
+              <Alert severity={success ? "success" : "error"} sx={{ mt: 2 }}>
                 {message}
               </Alert>
-              <Button variant="contained" onClick={handleGoHome}>
-                Go to Home
-              </Button>
-            </>
-          )}
 
-          {status === "error" && (
-            <>
-              <ErrorOutlineIcon color="error" sx={{ fontSize: 64, mb: 2 }} />
-              <Typography variant="h5" gutterBottom>
-                Verification Failed
-              </Typography>
-              <Alert severity="error" sx={{ mb: 2 }}>
-                {message}
-              </Alert>
-              <Button variant="outlined" onClick={handleGoHome}>
-                Return Home
-              </Button>
+              <Box mt={4} textAlign="center">
+                <Button
+                  variant="contained"
+                  color="primary"
+                  sx={{ fontWeight: "bold", textTransform: "none" }}
+                  onClick={() => navigate("/login")}
+                >
+                  Go to Login
+                </Button>
+              </Box>
             </>
           )}
-        </Box>
-      </Paper>
+        </CardContent>
+      </Card>
     </Container>
   );
-}
+};
+
+export default VerifyEmail;

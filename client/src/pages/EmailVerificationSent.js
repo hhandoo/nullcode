@@ -1,6 +1,4 @@
-import React from "react";
 import {
-  Box,
   Card,
   CardContent,
   Typography,
@@ -27,10 +25,9 @@ export default function EmailVerificationSent() {
       }}
     >
       <Card
-        elevation={4}
+        variant="outlined"
         sx={{
           width: "100%",
-          borderRadius: 4,
           textAlign: "center",
           p: isMobile ? 2 : 4,
         }}
@@ -40,7 +37,7 @@ export default function EmailVerificationSent() {
             color="primary"
             sx={{ fontSize: 60, mb: 2 }}
           />
-          <Typography variant="h5" gutterBottom>
+          <Typography variant="h4" gutterBottom>
             Check Your Email
           </Typography>
           <Typography variant="body1" sx={{ mb: 2 }}>
@@ -49,7 +46,7 @@ export default function EmailVerificationSent() {
           </Typography>
 
           <Typography variant="body2" sx={{ mb: 3, color: "text.secondary" }}>
-            Didn’t receive the email? It may take a few minutes to arrive, or
+            Did not receive the email? It may take a few minutes to arrive, or
             check your spam folder. You can also request a new verification
             email from your profile settings.
           </Typography>
@@ -57,9 +54,9 @@ export default function EmailVerificationSent() {
           <Button
             variant="contained"
             startIcon={<MailOutlineIcon />}
-            size={isMobile ? "medium" : "large"}
+            size={isMobile ? "small" : "medium"}
             href="/"
-            sx={{ mt: 1 }}
+            sx={{ mt: 1, fontWeight:'bold', textTransform:'none' }}
           >
             Return to Home
           </Button>

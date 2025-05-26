@@ -11,7 +11,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from .models import CustomUser
 from .serializers import *
-from .utils import send_verification_email
+from .utils import send_verification_email, send_email_change_verification_email
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.utils.text import slugify
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -27,29 +27,28 @@ class RegisterView(generics.CreateAPIView):
         user = serializer.save()
         send_verification_email(user, self.request)
 
-
-
-class VerifyEmailView(generics.GenericAPIView):
+class VerifyEmailView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request, uidb64, token):
         try:
             uid = urlsafe_base64_decode(uidb64).decode()
             user = CustomUser.objects.get(pk=uid)
-            
-            if user.is_verified:
-                return Response({'message': 'Email already verified.'}, status=status.HTTP_200_OK)
-            
-            if default_token_generator.check_token(user, token):
-                user.is_active = True
-                user.is_verified = True
-                user.save()
-                return Response({'message': 'Email verified successfully.'}, status=status.HTTP_200_OK)
-            else:
-                return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
+        except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
+            return Response({"error": "Invalid verification link."}, status=status.HTTP_400_BAD_REQUEST)
 
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        if default_token_generator.check_token(user, token):
+            if user.pending_email:
+                user.email = user.pending_email
+                user.pending_email = None
+
+            user.is_verified = True
+            user.is_active = True
+            user.save()
+
+            return Response({"message": "Email verified successfully."}, status=status.HTTP_200_OK)
+
+        return Response({"error": "Invalid or expired token."}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UpdateProfileView(generics.UpdateAPIView):
@@ -106,31 +105,35 @@ class ChangePasswordView(generics.UpdateAPIView):
 
         return response
 
-
-class ChangeEmailView(generics.GenericAPIView):
-    serializer_class = ChangeEmailSerializer
+class ChangeEmailView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    def post(self, request):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
+    def put(self, request):
         user = request.user
-        user.email = serializer.validated_data['new_email']
-        user.is_verified = False
-        user.is_active = False
+        new_email = request.data.get('new_email')
+
+        if not new_email:
+            return Response({'error': 'Email is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if new_email == user.email:
+            return Response({'error': 'New email is the same as the current email.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if CustomUser.objects.filter(email=new_email).exists():
+            return Response({'error': 'This email is already in use.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Save email to pending field
+        user.pending_email = new_email
         user.save()
 
         blacklist_user_tokens(user)
 
-        send_verification_email(user, request)
-
-        response = Response({'message': 'Verification email sent to new address. You have been logged out.'})
-
-        # Clear refresh token cookie
-        response.delete_cookie('refresh_token')
-
-        return response
+        # Send verification email to new address
+        send_verification_email(user, request, use_pending=True)
+        res = Response({
+            "message": "Verification email sent to the new address. Email will be updated after verification."
+        }, status=status.HTTP_200_OK)
+        res.delete_cookie('refresh_token')
+        return res
 
 
 
@@ -259,7 +262,6 @@ class DeleteUserView(APIView):
         return response
     
 
-
 class ResendVerificationEmailView(APIView):
     permission_classes = [permissions.AllowAny]
     serializer_class = ResendVerificationEmailSerializer
@@ -274,11 +276,17 @@ class ResendVerificationEmailView(APIView):
         if user:
             if user.is_verified:
                 return Response({'message': 'Email is already verified.'}, status=status.HTTP_200_OK)
+            
+            # Set is_verified and is_active to False
+            user.is_verified = False
+            user.is_active = False
+            user.save(update_fields=['is_verified', 'is_active'])
+
             send_verification_email(user, request)
         
         # Always return success message to prevent email enumeration
         return Response({'message': 'If an account with that email exists, a verification email has been resent.'}, status=status.HTTP_200_OK)
-    
+
 
 
 class RequestPasswordResetView(APIView):

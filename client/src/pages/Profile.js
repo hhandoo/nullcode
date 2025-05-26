@@ -17,11 +17,14 @@ import {
   Alert,
   Grid,
   useMediaQuery, 
-  useTheme
+  useTheme,
+  
 } from "@mui/material";
 import { PhotoCamera, Visibility, VisibilityOff } from "@mui/icons-material";
 import { useAuth } from "../util/AuthContext";
 import api from "../services/api";
+
+import DangerZone from "../component/DangerZone";
 
 const {
   REACT_APP_UPDATE_USER_PROFILE,
@@ -170,7 +173,7 @@ export default function Profile() {
     setProfilePic(previewUrl);
 
     // Upload the compressed file (adjust your API URL & fieldName here)
-    const response = await api.upload(REACT_APP_UPDATE_USER_AVATAR, compressedFile, 'avatar');
+    await api.upload(REACT_APP_UPDATE_USER_AVATAR, compressedFile, 'avatar');
     await fakeAsyncUpdate();
     await refreshUser();
     await fakeAsyncUpdate();
@@ -190,7 +193,7 @@ export default function Profile() {
   };
 
   const fakeAsyncUpdate = () =>
-    new Promise((resolve) => setTimeout(resolve, 1500));
+    new Promise((resolve) => setTimeout(resolve, 3000));
 
   const handlePersonalInfoSubmit = async (e) => {
     e.preventDefault();
@@ -235,14 +238,14 @@ export default function Profile() {
     setLoadingEmail(true);
     try {
 
-      await api.post(
+      const res = await api.put(
         REACT_APP_UPDATE_USER_EMAIL,
         { new_email: email.trim() },
         { withCredentials: true }
       );
-      await fakeAsyncUpdate(); // Replace with real API call
-      setAlertMessage("Email update request sent successfully.");
+      setAlertMessage(JSON.stringify(res.data));
       setAlertSeverity("success");
+      await fakeAsyncUpdate(); 
       await logout();
       await fakeAsyncUpdate();
     } catch {
@@ -351,7 +354,7 @@ export default function Profile() {
             sm={"auto"}
             sx={{
               display: "flex",
-              justifyContent: "center",
+              justifyContent: "start",
               position: "relative",
             }}
           >
@@ -544,6 +547,12 @@ export default function Profile() {
         {/* Email Form */}
         {tabIndex === 2 && (
           <Box component="form" onSubmit={handleEmailSubmit} noValidate>
+
+            <Typography variant="body2" sx={{py:4}}>
+              <b>** Changing the email will trigger an auto log out.</b> 
+            </Typography>
+
+
             <TextField
               label="Email"
               fullWidth
@@ -577,6 +586,9 @@ export default function Profile() {
         {/* Password Form */}
         {tabIndex === 3 && (
           <Box component="form" onSubmit={handlePasswordSubmit} noValidate>
+            <Typography variant="body2" sx={{py:4}}>
+              <b>** Changing the password will trigger an auto log out.</b> 
+            </Typography>
             <TextField
               label="Old Password"
               type={showOldPassword ? "text" : "password"}
@@ -682,6 +694,9 @@ export default function Profile() {
         )}
 
         <Divider  sx={{mt:4}}/>
+
+        <DangerZone />
+
       </Paper>
     </Container>
   );

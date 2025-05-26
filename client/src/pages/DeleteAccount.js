@@ -38,9 +38,6 @@ export default function DeleteAccount() {
     }
   };
 
-  const fakeAsyncUpdate = () =>
-    new Promise((resolve) => setTimeout(resolve, 1500));
-
  const handleDelete = async () => {
   setIsDeleting(true);
   setError(null);
@@ -63,15 +60,10 @@ export default function DeleteAccount() {
     link.click();
     link.remove();
     window.URL.revokeObjectURL(url);
+    setOpen(false);
+    setSuccessAlert(true);
 
     await logout();
-    setOpen(false); // Close dialog
-    setSuccessAlert(true); // Show success alert
-
-    // Delay before redirect
-    setTimeout(() => {
-      window.location.href = "/";
-    }, 3000); // 3 seconds
   } catch (err) {
     setError(err.message || "Something went wrong.");
   } finally {
@@ -111,22 +103,41 @@ export default function DeleteAccount() {
               </IconButton>
             }
           >
-            Your account has been permanently deleted and your data has been downloaded.
+            Your account has been permanently deleted on your request and your data has been shared with you.
           </Alert>
         </Collapse>
 
-        <Typography variant="body1" sx={{ mb: 2 }}>
-          Deleting your account is <strong>permanent</strong> and cannot be undone. All your data will be erased. Please proceed with caution.
+        <Typography variant="body1" gutterBottom color="text.secondary">
+          Clicking on the button below means that you understand the subsequent events listed below will trigger.
         </Typography>
+
+        <ul>
+          <li>
+            <Typography>Any active subscriptions will be cancelled immediately.</Typography>
+          </li>
+          <li>
+            <Typography>Access to the discussion forum will be revoked. </Typography>
+          </li>
+          <li>
+            <Typography>All your profile data and settings will be erased. </Typography>
+          </li>
+          <li>
+            <Typography>You will not be able to recover this account.</Typography>
+          </li>
+          <li>
+            <Typography>Deleting account will trigger a *.zip file download which will consist of all your data with us.</Typography>
+          </li>
+        </ul>
 
         <Button
           variant="contained"
           color="error"
           startIcon={<DeleteForeverIcon />}
           onClick={handleOpen}
-          sx={{ fontWeight: "bold" }}
+          size="large"
+          sx={{ fontWeight: "bold", textTransform:'none' }}
         >
-          Delete My Account
+          I Understand, Delete My Account
         </Button>
       </CardContent>
 

@@ -16,8 +16,10 @@ import PublicOnlyRoute from '../component/PublicOnlyRoute';
 import { Container } from '@mui/material';
 import DynamicBreadcrumbs from '../component/DynamicBreadcrumbs';
 import SchoolIcon from '@mui/icons-material/School';
-import EmailVerificationPage from '../pages/EmailVerificationSent';
+import EmailVerificationSent from '../pages/EmailVerificationSent';
 import ProblemsSigningIn from '../pages/ProblemsSigningIn';
+import TokenVerificationEmail from '../pages/TokenVerificationEmail'
+import ResetPassword from '../pages/ResetPassword';
 
 const AppBarData = {
   website_name: "YALS World",
@@ -68,7 +70,7 @@ const AppBarData = {
     },
     {
       page_name: "Delete",
-      page_path: "/delete",
+      page_path: "/delete-account",
       element: <PrivateRoute><DeleteAccount /></PrivateRoute>,
       index: false,
       is_in_RAB: false
@@ -91,7 +93,15 @@ const AppBarData = {
     {
       page_name: "Email Verification Sent",
       page_path: "/email-verification-sent",
-      element: <PublicOnlyRoute><EmailVerificationPage /></PublicOnlyRoute>,
+      element: <PublicOnlyRoute><EmailVerificationSent /></PublicOnlyRoute>,
+      index: false,
+      is_in_RAB: false
+    },
+
+    {
+      page_name: "Token Verification Email",
+      page_path: "/token-verification-email/:uidb64/:token",
+      element: <PublicOnlyRoute><TokenVerificationEmail /></PublicOnlyRoute>,
       index: false,
       is_in_RAB: false
     },
@@ -99,8 +109,16 @@ const AppBarData = {
 
     {
       page_name: "Problems Signing In",
-      page_path: "/problems-signing-in",
+      page_path: "/login/problems-signing-in",
       element: <PublicOnlyRoute><ProblemsSigningIn /></PublicOnlyRoute>,
+      index: false,
+      is_in_RAB: false
+    },
+
+    {
+      page_name: "Reset Password",
+      page_path: "/reset-password/:uid/:token",
+      element: <PublicOnlyRoute><ResetPassword /></PublicOnlyRoute>,
       index: false,
       is_in_RAB: false
     },

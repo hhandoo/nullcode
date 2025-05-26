@@ -12,6 +12,7 @@ def avatar_upload_to(instance, filename):
 class CustomUser(AbstractUser):
     username = models.CharField(max_length=32, unique=True)
     is_verified = models.BooleanField(default=False)
+    pending_email = models.EmailField(null=True, blank=True)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
 
 

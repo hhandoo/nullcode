@@ -185,3 +185,12 @@ class ResetPasswordConfirmSerializer(serializers.Serializer):
             raise serializers.ValidationError("Passwords do not match")
         validate_password(data['new_password'])
         return data
+
+
+class RequestEmailChangeSerializer(serializers.Serializer):
+    new_email = serializers.EmailField()
+
+    def validate_new_email(self, value):
+        if CustomUser.objects.filter(email=value).exists():
+            raise serializers.ValidationError("This email is already in use.")
+        return value

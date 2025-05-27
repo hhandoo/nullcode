@@ -23,6 +23,7 @@ const CodeBlock = ({ code, language = 'python', prismTheme }) => {
             elevation={3}
             sx={{
                 p: 2,
+                my:4
             }}
         >
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>

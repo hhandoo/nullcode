@@ -21,6 +21,7 @@ import ProblemsSigningIn from '../pages/ProblemsSigningIn';
 import TokenVerificationEmail from '../pages/TokenVerificationEmail'
 import ResetPassword from '../pages/ResetPassword';
 
+import CourseHomePage from '../pages/Course/CourseHomePage';
 const AppBarData = {
   website_name: "YALS World",
   icon: <SchoolIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} color='inherit' />,
@@ -75,10 +76,17 @@ const AppBarData = {
       index: false,
       is_in_RAB: false
     },
-    {
+    // {
+    //   page_name: "Course",
+    //   page_path: "/course",
+    //   element: <Course />,
+    //   index: true,
+    //   is_in_RAB: false
+    // },
+     {
       page_name: "Course",
-      page_path: "/course",
-      element: <Course />,
+      page_path: "/course/:course_slug",
+      element: <CourseHomePage />,
       index: true,
       is_in_RAB: false
     },

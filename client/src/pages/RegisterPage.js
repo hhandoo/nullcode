@@ -88,7 +88,7 @@ export default function RegisterUser() {
 
       navigate("/email-verification-sent");
     } catch (err) {
-      setError(JSON.stringify(err.response.data) || "Registration failed.");
+      setError(JSON.stringify(err) || "Registration failed.");
     } finally {
       setIsSubmitting(false);
     }

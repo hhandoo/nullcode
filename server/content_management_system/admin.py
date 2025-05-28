@@ -6,7 +6,8 @@ from .models import (
     CourseLesson,
     TopicType,
     LessonTopic,
-    CourseComment
+    CourseComment,
+    AuthorDetails
 )
 
 
@@ -26,6 +27,15 @@ class CourseTypeAdmin(admin.ModelAdmin):
     list_filter = ('is_active',)
 
 
+class AuthorDetailsInline(admin.TabularInline):
+    model = AuthorDetails
+    extra = 1
+    autocomplete_fields = ['user']
+    fields = ('user', 'bio', 'designation', 'is_active')
+    verbose_name = 'Author'
+    verbose_name_plural = 'Authors'
+
+
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
     list_display = ('course_title', 'course_category', 'course_type', 'is_free_course', 'course_price', 'is_published', 'is_active', 'created_at')
@@ -34,6 +44,7 @@ class CourseAdmin(admin.ModelAdmin):
     list_filter = ('is_active', 'is_published', 'is_free_course', 'course_category', 'course_type')
     date_hierarchy = 'created_at'
     ordering = ('-created_at',)
+    inlines = [AuthorDetailsInline]
 
 
 @admin.register(CourseLesson)
@@ -98,3 +109,11 @@ class CourseCommentAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         return qs.select_related('user', 'course', 'parent')
+
+
+@admin.register(AuthorDetails)
+class AuthorDetailsAdmin(admin.ModelAdmin):
+    list_display = ('user', 'course', 'designation', 'is_active')
+    search_fields = ('user__username', 'course__course_title', 'designation')
+    list_filter = ('is_active', 'course')
+    autocomplete_fields = ['user', 'course']

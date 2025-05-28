@@ -40,8 +40,15 @@ class Course(models.Model):
     course_title = models.CharField(max_length=200)
     course_slug = models.SlugField(max_length=200, unique=True)
     course_description = models.TextField()
+    course_banner = models.ImageField(upload_to='course_banners/', blank=True, null=True)
+    course_views = models.IntegerField(default=0)
     is_free_course = models.BooleanField(default=True)
     course_price = models.DecimalField(max_digits=10, decimal_places=2)
+    authors = models.ManyToManyField(
+        'user_management_system.CustomUser',
+        through='AuthorDetails',
+        related_name='authored_courses'
+    )
     is_published = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
@@ -58,7 +65,52 @@ class Course(models.Model):
 
     def __str__(self):
         return self.course_title
-    
+
+class CourseRating(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='ratings')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    rating = models.IntegerField()  # Typically 1-5
+    review = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Course Rating"
+        verbose_name_plural = "Course Ratings"
+        unique_together = ('course', 'user')  # Prevent duplicate ratings from same user
+
+    def __str__(self):
+        return f"{self.user.username} rated {self.course.course_title} - {self.rating}"
+
+
+class AuthorDetails(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    user = models.ForeignKey('user_management_system.CustomUser', on_delete=models.CASCADE)
+    bio = models.TextField(blank=True, null=True)
+    designation = models.CharField(max_length=255, blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ('course', 'user')
+        verbose_name = "Author Detail"
+        verbose_name_plural = "Author Details"
+
+    def __str__(self):
+        return f"{self.user.get_full_name()} - {self.course.course_title}"
+
+
+class ContactDetails(models.Model):
+    author = models.ForeignKey(AuthorDetails, on_delete=models.CASCADE, related_name='contact_details')
+    contact_type = models.CharField(max_length=100)  # e.g., "Email", "LinkedIn", "Phone"
+    contact_value = models.CharField(max_length=255)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = "Contact Detail"
+        verbose_name_plural = "Contact Details"
+
+    def __str__(self):
+        return f"{self.contact_type}: {self.contact_value}"
+
 
 class CourseComment(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='comments')

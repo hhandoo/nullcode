@@ -104,8 +104,22 @@ class AuthorDetails(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="co_authors")
     designation = models.CharField(max_length=255)
-    is_active = models.BooleanField(default=True)  # True means consents to be co-author
-    consent_given = models.BooleanField(default=False)  # or rename to something clearer
+    is_active = models.BooleanField(default=True)
+    consent_given = models.BooleanField(default=False)
+
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    consent_date = models.DateTimeField(null=True, blank=True)
+
+
+    def save(self, *args, **kwargs):
+        # Automatically update consent_date when consent_given changes
+        if self.pk is not None:
+            original = AuthorDetails.objects.get(pk=self.pk)
+            if not original.consent_given and self.consent_given:
+                self.consent_date = timezone.now()
+        elif self.consent_given:
+            self.consent_date = timezone.now()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.user.username} - {self.designation}"
@@ -168,7 +182,7 @@ class CourseLesson(models.Model):
         ordering = ['lesson_order']
 
     def __str__(self):
-        return self.lesson_title
+        return f"{self.course.course_title} - {self.lesson_title}"
 
 
 class TopicType(models.Model):
